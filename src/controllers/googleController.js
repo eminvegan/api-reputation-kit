@@ -14,7 +14,7 @@ export const getReviews = async (req, res) => {
 
     const page = await browser.newPage();
 
-    await page.goto('https://www.google.com/maps/place/Restaurant+Altes+Landhaus+im+Forstgarten+Kleve/@51.795725,6.1261031,16.08z/data=!4m10!1m2!2m1!1sRestaurants!3m6!1s0x47c7741823c3542d:0xa6b8e7bedc2026a!8m2!3d51.7971002!4d6.1257!9m1!1b1');
+    await page.goto('https://www.google.com/maps/place/Restaurant+Altes+Landhaus+im+Forstgarten+Kleve/@51.795725,6.1261031,16.08z/data=!4m10!1m2!2m1!1sRestaurants!3m6!1s0x47c7741823c3542d:0xa6b8e7bedc2026a!8m2!3d51.7971002!4d6.1257!9m1!1b1?hl=de');
 
     await page.waitForSelector('.section-review-text');
 
