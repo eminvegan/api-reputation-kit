@@ -3,10 +3,16 @@ import { addReview, getReviews } from '../controllers/googleController';
 const routes = (app) => {
 
     app.route('/google')
-
         .get((req, res, next) => {
-            console.log(`Request from: ${req.originalUrl}`);
-            console.log(`Request type: ${req.method}`);
+            // console.log(`Request from: ${req.originalUrl}`);
+            // console.log(`Request type: ${req.method}`);
+            next();
+        }, getReviews);
+
+    app.route('/google/:placeID/:geometry/:sort')
+        .get((req, res, next) => {
+            // console.log(`Request from: ${req.originalUrl}`);
+            // console.log(`Request type: ${req.method}`);
             next();
         }, getReviews);
 

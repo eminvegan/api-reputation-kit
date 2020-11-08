@@ -1,71 +1,85 @@
 import puppeteer from 'puppeteer';
-import { GoogleSchema } from '../models/googleModel';
 
-const totalReviewCount = 100;
+const iPhone = puppeteer.devices['iPhone 6'];
 
 export const getReviews = async (req, res) => {
 
-    // res.json(req.params.url);
+    const PID =  req.params.placeID;
+    const GEO =  req.params.geometry.split(',');
+    const LAT = GEO[0];
+    const LNG = GEO[1];
+    const SORT = req.params.sort;
 
     const browser = await puppeteer.launch({
         args: ['--disabled-setuid-sandbox', '--no-sandbox'],
-        headless: true
+        headless: true,
+        pipe: true
     });
 
     const page = await browser.newPage();
+    await page.emulate(iPhone);
+    await page.goto('https://www.google.com/maps/search/?api=1&query=' + LAT + ',' + LNG + '&query_place_id=' + PID);
+    await page.waitForNavigation();
 
-    await page.goto('https://www.google.com/maps/place/Restaurant+Altes+Landhaus+im+Forstgarten+Kleve/@51.795725,6.1261031,16.08z/data=!4m10!1m2!2m1!1sRestaurants!3m6!1s0x47c7741823c3542d:0xa6b8e7bedc2026a!8m2!3d51.7971002!4d6.1257!9m1!1b1?hl=de');
+    await page.waitForSelector('.section-rating-term > span > span:nth-child(1) > span');
 
-    await page.waitForSelector('.section-review-text');
+    // total review count
+    const totalReviewCount = await page.evaluate(() => {
+        return document.querySelector('.section-rating-term > span > span:nth-child(1) > span').innerHTML.replace(/[&\/\\#,+()$~%.'":*?<>{}]/g, '');
+    });
 
+    // navigate to all reviews
+    const totalReviewButton1 = await page.evaluateHandle(() => {
+        return document.querySelector('.section-rating-term');
+    });
+    await totalReviewButton1.click();
+    await page.waitForSelector('button[jsaction="pane.rating.moreReviews"]');
+    const totalReviewButton2 = await page.evaluateHandle(() => {
+        return document.querySelector('button[jsaction="pane.rating.moreReviews"]');
+    });
+    await totalReviewButton2.click();
+    await page.waitForSelector('div.ml-reviews-page-user-review-container:last-child');
+
+    // load all reviews
     await scrapInfiniteScrollItems(page, totalReviewCount, 100);
 
-    const data = await page.evaluate(() => {
-        let authorNameElementList = document.getElementsByClassName('section-review-title');
-        let authorNameList = [];
-        for (let element of authorNameElementList) {
-            authorNameList.push(element.innerText);
-        }
+    const data = await page.evaluate((PID, LAT, LNG) => {
+        let reviews = [];
+        document.querySelectorAll('div.ml-reviews-page-user-review-container').forEach((review) => {
+            let uid = review.querySelector('.ml-reviews-page-user-review-name').getAttribute('id').replace('ml-reviews-page-user-review-name-', '');
+            let name = review.querySelector('.ml-reviews-page-user-review-name').innerHTML;
+            let publishDate = review.querySelector('.ml-reviews-page-user-review-publish-date').innerHTML;
+            let text = review.querySelector('.ml-reviews-page-user-review-text').innerHTML;
+            let ratingContainer = review.querySelector('.ml-rating-stars-container');
+            let rating = ratingContainer.getAttribute('aria-label');
+            let url = 'https://www.google.com/maps/contrib/' + uid + '/place/' + PID + '/@' + LAT + ',' + LNG + ',10z/data=!4m4!1m3!8m2!1e1!2s115174880875311411362?hl=de-DE';
+            reviews.push({ uid, name, publishDate, text, rating, url });
+        });
+        return reviews;
+    }, PID, LAT, LNG);
 
-        let textElementList = document.getElementsByClassName('section-review-text');
-        let textList = [];
-        for (let element of textElementList) {
-            textList.push(element.innerText);
-        }
-
-        return { authorNameList, textList };
-    });
 
     await browser.close();
 
     res.json(data);
-
-    // return new Promise((resolve, reject) => {
-    //     if (reject) {
-    //         res.send(reject);
-    //     }
-    //     resolve(res.json(data));
-    // });
 };
 
 const scrapInfiniteScrollItems = async (page, totalReviewCount, scrollDelay = 100) => {
     let visibleReviews = await page.evaluate(extractReviewCount);
     while (totalReviewCount > visibleReviews) {
-        const previoustHeight = await page.evaluate(getPreviousHeight);
+        console.log(visibleReviews);
         await page.evaluate(() => {
-            let leftSideBar = document.querySelector(".section-scrollbox.scrollable-y");
-            leftSideBar.scrollTo(0, leftSideBar.scrollHeight);
+            document.querySelector('div.ml-reviews-page-user-review-container:last-child').scrollIntoView({ block: 'end', inline: 'end' });
         });
-        await page.waitForFunction(`document.querySelector('.section-scrollbox.scrollable-y').scrollHeight>${previoustHeight}`);
-        await page.waitFor(scrollDelay);
+        await page.waitForTimeout(scrollDelay);
         visibleReviews = await page.evaluate(extractReviewCount);
     }
 };
 
 const extractReviewCount = () => {
-    return document.querySelectorAll('.section-review-content').length;
+    return document.querySelectorAll('div.ml-reviews-page-user-review-container').length;
 };
 
 const getPreviousHeight = () => {
-    return document.querySelector('.section-scrollbox.scrollable-y').scrollHeight;
+    return document.querySelector('.ml-reviews-page-white-background > div:nth-child(2)').scrollHeight;
 };

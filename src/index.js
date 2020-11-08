@@ -1,6 +1,6 @@
 import express from 'express';
 import routes from './routes/googleRoutes';
-import mongoose from 'mongoose';
+// import mongoose from 'mongoose';
 import bodyParser from 'body-parser';
 
 const app = express();
@@ -17,6 +17,10 @@ app.use(bodyParser.json());
 
 routes(app);
 
-app.get('/', (req, res) => res.send('app.get'));
+app.get('/', (req, res) => {
+    res.send('app.get');
+});
 
-app.listen(PORT, () => console.log('app.listen'));
+app.listen(PORT, () => {
+    console.log('app.listen')
+});
