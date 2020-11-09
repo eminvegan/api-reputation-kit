@@ -64,15 +64,26 @@ export const getReviews = async (req, res) => {
     res.json(data);
 };
 
-const scrapInfiniteScrollItems = async (page, totalReviewCount, scrollDelay = 100) => {
-    let visibleReviews = await page.evaluate(extractReviewCount);
-    while (totalReviewCount > visibleReviews) {
-        console.log(visibleReviews);
-        await page.evaluate(() => {
-            document.querySelector('div.ml-reviews-page-user-review-container:last-child').scrollIntoView({ block: 'end', inline: 'end' });
-        });
-        await page.waitForTimeout(scrollDelay);
-        visibleReviews = await page.evaluate(extractReviewCount);
+const scrapInfiniteScrollItems = async (page, totalReviewCount, delay) => {
+    let i = 0;
+    let tmp = 0;
+    let visibleReviews = 0;
+    while (visibleReviews <= totalReviewCount) {
+        tmp = await page.evaluate(extractReviewCount);
+        console.log('tmp: ' + tmp);
+        console.log('visibleReviews: ' + visibleReviews);
+        if (tmp != visibleReviews) {
+            await page.evaluate(() => {
+                document.querySelector('div.ml-reviews-page-user-review-container:last-child').scrollIntoView({ block: 'end', inline: 'end' });
+            });
+            visibleReviews = await page.evaluate(extractReviewCount);
+            await page.waitForTimeout(delay);
+        } else {
+            i++;
+            if (i == 3) {
+                totalReviewCount = totalReviewCount - (totalReviewCount % visibleReviews);
+            }
+        }
     }
 };
 
