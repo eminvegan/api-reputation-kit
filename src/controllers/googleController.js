@@ -12,8 +12,8 @@ export const getReviews = async (req, res) => {
 
     const browser = await puppeteer.launch({
         args: ['--disabled-setuid-sandbox', '--no-sandbox'],
-        headless: true,
-        pipe: true
+        headless: true
+        // pipe: true
     });
 
     const page = await browser.newPage();
@@ -38,8 +38,12 @@ export const getReviews = async (req, res) => {
         return document.querySelector('button[jsaction="pane.rating.moreReviews"]');
     });
     await totalReviewButton2.click();
-    await page.waitForSelector('div.ml-reviews-page-user-review-container:last-child');
+    // await page.waitForTimeout(1000);
+    // await page.waitForSelector('.ml-reviews-page-user-review-container[jsinstance^="*"]');
+    await page.waitForRequest(request => request.url().includes('listentitiesreviews') && request.method() === 'GET');
+    await page.waitForSelector('.ml-reviews-page-user-review-container[jsinstance^="*"]');
 
+    console.log('loading reviews');
     // load all reviews
     await scrapInfiniteScrollItems(page, totalReviewCount, 100);
 
@@ -65,30 +69,34 @@ export const getReviews = async (req, res) => {
 };
 
 const scrapInfiniteScrollItems = async (page, totalReviewCount, delay) => {
-    let i = 0;
-    let tmp = 0;
-    let visibleReviews = 0;
-    while (visibleReviews <= totalReviewCount) {
-        tmp = await page.evaluate(extractReviewCount);
-        console.log('tmp: ' + tmp);
-        console.log('visibleReviews: ' + visibleReviews);
-        if (tmp != visibleReviews) {
-            await page.evaluate(() => {
-                document.querySelector('div.ml-reviews-page-user-review-container:last-child').scrollIntoView({ block: 'end', inline: 'end' });
-            });
-            visibleReviews = await page.evaluate(extractReviewCount);
+    page.setDefaultTimeout(1339);
+    let currentReviewsCount = 0;
+    try {
+        let previousReviewsCount;
+        let previousHeight;
+        while (currentReviewsCount <= totalReviewCount) {
+            previousReviewsCount = currentReviewsCount;
+            console.log('previousReviewsCount: ' + previousReviewsCount);
+
+            previousHeight = await page.evaluate(() => document.querySelector('.ml-reviews-page-white-background > div:not(.ml-appbar):not(.ml-reviews-page-user-review-loading)').scrollHeight);
+            console.log('previousHeight: ' + previousHeight)
+
+            await page.evaluate(`document.querySelector('.ml-reviews-page-user-review-container[jsinstance^="*"]').scrollIntoView({ block: 'end', inline: 'end' })`);
+
+            await page.waitForFunction(`document.querySelector('.ml-reviews-page-white-background > div:not(.ml-appbar):not(.ml-reviews-page-user-review-loading)').scrollHeight > ${previousHeight}`);
+
             await page.waitForTimeout(delay);
-        } else {
-            i++;
-            if (i == 3) {
-                totalReviewCount = totalReviewCount - (totalReviewCount % visibleReviews);
-            }
+
+            currentReviewsCount = await page.evaluate(getReviewCount);
+            console.log('currentReviewsCount: ' + currentReviewsCount);
+
+            console.log('----------------------------------------');
         }
-    }
+    } catch (error) {}
 };
 
-const extractReviewCount = () => {
-    return document.querySelectorAll('div.ml-reviews-page-user-review-container').length;
+const getReviewCount = () => {
+    return document.querySelectorAll('.ml-reviews-page-user-review-container').length;
 };
 
 const getPreviousHeight = () => {
