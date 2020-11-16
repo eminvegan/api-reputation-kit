@@ -7,23 +7,23 @@ import {
 const routes = (app) => {
 
 	app.get('/google/:placeID/all', async (req, res) => {
-		// res.setHeader('Connection', 'keep-alive');
-		// res.setHeader('Cache-Control', 'no-cache');
-		// res.setHeader('Access-Control-Allow-Origin', '*');
+		res.setHeader('Connection', 'keep-alive');
+		res.setHeader('Cache-Control', 'no-cache');
+		res.setHeader('Access-Control-Allow-Origin', '*');
 		await getAll(req, res);
 	});
 
 	app.get('/google/:placeID/page', async (req, res) => {
-		// res.setHeader('Connection', 'keep-alive');
-		// res.setHeader('Cache-Control', 'no-cache');
-		// res.setHeader('Access-Control-Allow-Origin', '*');
+		res.setHeader('Connection', 'keep-alive');
+		res.setHeader('Cache-Control', 'no-cache');
+		res.setHeader('Access-Control-Allow-Origin', '*');
 		await getFirstPage(req, res);
 	});
 
 	app.get('/google/:placeID/amount', async (req, res) => {
-		// res.setHeader('Connection', 'keep-alive');
-		// res.setHeader('Cache-Control', 'no-cache');
-		// res.setHeader('Access-Control-Allow-Origin', '*');
+		res.setHeader('Connection', 'keep-alive');
+		res.setHeader('Cache-Control', 'no-cache');
+		res.setHeader('Access-Control-Allow-Origin', '*');
 		await getAmount(req, res);
 	});
 
