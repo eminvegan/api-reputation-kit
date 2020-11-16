@@ -1,104 +1,202 @@
-import puppeteer from 'puppeteer';
+import puppeteer from "puppeteer";
 
-const iPhone = puppeteer.devices['iPhone 6'];
+const iPhone = puppeteer.devices["iPhone 6"];
 
-export const getReviews = async (req, res) => {
-
-    const PID =  req.params.placeID;
-    const GEO =  req.params.geometry.split(',');
-    const LAT = GEO[0];
-    const LNG = GEO[1];
-    const SORT = req.params.sort;
-
-    const browser = await puppeteer.launch({
-        args: ['--disabled-setuid-sandbox', '--no-sandbox'],
-        headless: true
-        // pipe: true
-    });
-
-    const page = await browser.newPage();
-    await page.emulate(iPhone);
-    await page.goto('https://www.google.com/maps/search/?api=1&query=' + LAT + ',' + LNG + '&query_place_id=' + PID);
-    await page.waitForNavigation();
-
-    await page.waitForSelector('.section-rating-term > span > span:nth-child(1) > span');
-
-    // total review count
-    const totalReviewCount = await page.evaluate(() => {
-        return document.querySelector('.section-rating-term > span > span:nth-child(1) > span').innerHTML.replace(/[&\/\\#,+()$~%.'":*?<>{}]/g, '');
-    });
-
-    // navigate to all reviews
-    const totalReviewButton1 = await page.evaluateHandle(() => {
-        return document.querySelector('.section-rating-term');
-    });
-    await totalReviewButton1.click();
-    await page.waitForSelector('button[jsaction="pane.rating.moreReviews"]');
-    const totalReviewButton2 = await page.evaluateHandle(() => {
-        return document.querySelector('button[jsaction="pane.rating.moreReviews"]');
-    });
-    await totalReviewButton2.click();
-    // await page.waitForTimeout(1000);
-    // await page.waitForSelector('.ml-reviews-page-user-review-container[jsinstance^="*"]');
-    await page.waitForRequest(request => request.url().includes('listentitiesreviews') && request.method() === 'GET');
-    await page.waitForSelector('.ml-reviews-page-user-review-container[jsinstance^="*"]');
-
-    console.log('loading reviews');
-    // load all reviews
-    await scrapInfiniteScrollItems(page, totalReviewCount, 100);
-
-    const data = await page.evaluate((PID, LAT, LNG) => {
-        let reviews = [];
-        document.querySelectorAll('div.ml-reviews-page-user-review-container').forEach((review) => {
-            let uid = review.querySelector('.ml-reviews-page-user-review-name').getAttribute('id').replace('ml-reviews-page-user-review-name-', '');
-            let name = review.querySelector('.ml-reviews-page-user-review-name').innerHTML;
-            let publishDate = review.querySelector('.ml-reviews-page-user-review-publish-date').innerHTML;
-            let text = review.querySelector('.ml-reviews-page-user-review-text').innerHTML;
-            let ratingContainer = review.querySelector('.ml-rating-stars-container');
-            let rating = ratingContainer.getAttribute('aria-label');
-            let url = 'https://www.google.com/maps/contrib/' + uid + '/place/' + PID + '/@' + LAT + ',' + LNG + ',10z/data=!4m4!1m3!8m2!1e1!2s115174880875311411362?hl=de-DE';
-            reviews.push({ uid, name, publishDate, text, rating, url });
-        });
-        return reviews;
-    }, PID, LAT, LNG);
-
-
-    await browser.close();
-
-    res.json(data);
+export const getAmount = async (req, res) => {
+	const PID = req.params.placeID;
+	const browser = await puppeteer.launch({
+		args: ["--disabled-setuid-sandbox", "--no-sandbox"],
+		headless: true,
+	});
+	const page = await browser.newPage();
+	await page.setViewport({
+		width: 375,
+		height: 667,
+		deviceScaleFactor: 1,
+	});
+	await page.emulate(iPhone);
+	await page.goto("https://www.google.com/maps/search/?api=1&query=Google&query_place_id=" + PID);
+	await page.waitForNavigation();
+	page.setDefaultTimeout(0);
+	await page.waitForSelector(".ml-promotion-content");
+	await page.waitForTimeout(500);
+	const noThanks = await page.evaluateHandle(() => {
+		return document.querySelector(".ml-promotion-action-button.ml-promotion-no-button.ml-promotion-no-thanks");
+	});
+	await noThanks.click();
+	await page.waitForTimeout(500);
+	const totalReviewCount = await page.evaluate(() => {
+		const amount = document.querySelector(".section-rating-term > span:not(.section-rating-line-context-divider) > span:nth-child(1) > span").innerHTML;
+		return amount.replace(/[&\/\\#,+()$~%.'":*?<>{}]/g, "");
+	});
+	await browser.close();
+	res.json(totalReviewCount);
+	res.end();
 };
 
-const scrapInfiniteScrollItems = async (page, totalReviewCount, delay) => {
-    page.setDefaultTimeout(1339);
-    let currentReviewsCount = 0;
-    try {
-        let previousReviewsCount;
-        let previousHeight;
-        while (currentReviewsCount <= totalReviewCount) {
-            previousReviewsCount = currentReviewsCount;
-            console.log('previousReviewsCount: ' + previousReviewsCount);
+export const getFirstPage = async (req, res) => {
+	const PID = req.params.placeID;
+	const browser = await puppeteer.launch({
+		args: ["--disabled-setuid-sandbox", "--no-sandbox"],
+		headless: true,
+	});
+	const page = await browser.newPage();
+	await page.setViewport({
+		width: 375,
+		height: 667,
+		deviceScaleFactor: 1,
+	});
+	await page.emulate(iPhone);
+	await page.goto("https://www.google.com/maps/search/?api=1&query=Google&query_place_id=" + PID);
+	await page.waitForNavigation();
+	await page.waitForSelector(".ml-promotion-content");
+	await page.waitForTimeout(500);
+	const noThanks = await page.evaluateHandle(() => {
+		return document.querySelector(".ml-promotion-action-button.ml-promotion-no-button.ml-promotion-no-thanks");
+	});
+	await noThanks.click();
+	await page.waitForTimeout(500);
+	const showDetails = await page.evaluateHandle(() => {
+		if (document.querySelector('[aria-label*="details"]') != "undefined" && document.querySelector('[aria-label*="details"]') != null) {
+			return document.querySelector('[aria-label*="details"]');
+		} else {
+			return document.querySelector('[aria-label*="Details"]');
+		}
+	});
+	await showDetails.click();
+	await page.waitForTimeout(500);
+	await page.waitForSelector('button[jsaction="pane.rating.moreReviews"]');
+	const showReviews = await page.evaluateHandle(() => {
+		return document.querySelector('button[jsaction="pane.rating.moreReviews"]');
+	});
+	await showReviews.click();
+	await page.waitForTimeout(500);
+	await page.waitForSelector('.ml-reviews-page-user-review-container[jsinstance^="*"]');
+	try {
+		await scrapInfiniteScrollItems(res, page, 72, 500);
+	} catch (e) {}
+	const data = await page.evaluate(PID => {
+		let reviews = [];
+		document.querySelectorAll("div.ml-reviews-page-user-review-container").forEach(review => {
+			let uid = review.querySelector(".ml-reviews-page-user-review-name").getAttribute("id").replace("ml-reviews-page-user-review-name-", "");
+			let name = review.querySelector(".ml-reviews-page-user-review-name").innerHTML;
+			let publishDate = review.querySelector(".ml-reviews-page-user-review-publish-date").innerHTML;
+			let text = review.querySelector(".ml-reviews-page-user-review-text").innerHTML;
+			let ratingContainer = review.querySelector(".ml-rating-stars-container");
+			let rating = ratingContainer.getAttribute("aria-label");
+			let url = "https://www.google.com/maps/contrib/" + uid + "/place/" + PID + "/@,10z/data=!4m4!1m3!8m2!1e1!2s115174880875311411362?hl=de-DE";
+			reviews.push({
+				uid,
+				name,
+				publishDate,
+				text,
+				rating,
+				url,
+			});
+		});
+		return reviews;
+	}, PID);
+	await browser.close();
+	res.json(data);
+	res.end();
+};
 
-            previousHeight = await page.evaluate(() => document.querySelector('.ml-reviews-page-white-background > div:not(.ml-appbar):not(.ml-reviews-page-user-review-loading)').scrollHeight);
-            console.log('previousHeight: ' + previousHeight)
+export const getAll = async (req, res) => {
+	const PID = req.params.placeID;
+	const browser = await puppeteer.launch({
+		args: ["--disabled-setuid-sandbox", "--no-sandbox"],
+		headless: true,
+	});
+	const page = await browser.newPage();
+	await page.setViewport({
+		width: 375,
+		height: 667,
+		deviceScaleFactor: 1,
+	});
+	await page.emulate(iPhone);
+	await page.goto("https://www.google.com/maps/search/?api=1&query=Google&query_place_id=" + PID);
+	await page.waitForNavigation();
+	page.setDefaultTimeout(0);
+	await page.waitForSelector(".ml-promotion-content");
+	await page.waitForTimeout(500);
+	const noThanks = await page.evaluateHandle(() => {
+		return document.querySelector(".ml-promotion-action-button.ml-promotion-no-button.ml-promotion-no-thanks");
+	});
+	await noThanks.click();
+	await page.waitForTimeout(500);
+	const totalReviewCount = await page.evaluate(() => {
+		const amount = document.querySelector(".section-rating-term > span:not(.section-rating-line-context-divider) > span:nth-child(1) > span").innerHTML;
+		return amount.replace(/[&\/\\#,+()$~%.'":*?<>{}]/g, "");
+	});
+	await page.waitForTimeout(500);
+	const showDetails = await page.evaluateHandle(() => {
+		if (document.querySelector('[aria-label*="details"]') != "undefined" && document.querySelector('[aria-label*="details"]') != null) {
+			return document.querySelector('[aria-label*="details"]');
+		} else {
+			return document.querySelector('[aria-label*="Details"]');
+		}
+	});
+	await showDetails.click();
+	await page.waitForTimeout(500);
+	await page.waitForSelector('button[jsaction="pane.rating.moreReviews"]');
+	const showReviews = await page.evaluateHandle(() => {
+		return document.querySelector('button[jsaction="pane.rating.moreReviews"]');
+	});
+	await showReviews.click();
+	await page.waitForTimeout(500);
+	await page.waitForSelector('.ml-reviews-page-user-review-container[jsinstance^="*"]');
 
-            await page.evaluate(`document.querySelector('.ml-reviews-page-user-review-container[jsinstance^="*"]').scrollIntoView({ block: 'end', inline: 'end' })`);
+	try {
+		await scrapInfiniteScrollItems(res, page, totalReviewCount, 250);
+	} catch (e) {}
+	const data = await page.evaluate(PID => {
+		let reviews = [];
+		document.querySelectorAll("div.ml-reviews-page-user-review-container").forEach(review => {
+			let uid = review.querySelector(".ml-reviews-page-user-review-name").getAttribute("id").replace("ml-reviews-page-user-review-name-", "");
+			let name = review.querySelector(".ml-reviews-page-user-review-name").innerHTML;
+			let publishDate = review.querySelector(".ml-reviews-page-user-review-publish-date").innerHTML;
+			let text = review.querySelector(".ml-reviews-page-user-review-text").innerHTML;
+			let ratingContainer = review.querySelector(".ml-rating-stars-container");
+			let rating = ratingContainer.getAttribute("aria-label");
+			let url = "https://www.google.com/maps/contrib/" + uid + "/place/" + PID + "/@,10z/data=!4m4!1m3!8m2!1e1!2s115174880875311411362?hl=de-DE";
+			reviews.push({
+				uid,
+				name,
+				publishDate,
+				text,
+				rating,
+				url,
+			});
+		});
+		return reviews;
+	}, PID);
+	await browser.close();
+	res.json(data);
+	res.end();
+};
 
-            await page.waitForFunction(`document.querySelector('.ml-reviews-page-white-background > div:not(.ml-appbar):not(.ml-reviews-page-user-review-loading)').scrollHeight > ${previousHeight}`);
-
-            await page.waitForTimeout(delay);
-
-            currentReviewsCount = await page.evaluate(getReviewCount);
-            console.log('currentReviewsCount: ' + currentReviewsCount);
-
-            console.log('----------------------------------------');
-        }
-    } catch (error) {}
+const scrapInfiniteScrollItems = async (res, page, totalReviewCount, delay) => {
+	page.setDefaultTimeout(1339);
+	let currentReviewsCount = 0;
+	try {
+		let previousReviewsCount;
+		let previousHeight;
+		while (currentReviewsCount <= totalReviewCount) {
+			previousReviewsCount = currentReviewsCount;
+			previousHeight = await page.evaluate(() => document.querySelector(".ml-reviews-page-white-background > div:not(.ml-appbar):not(.ml-reviews-page-user-review-loading)").scrollHeight);
+			await page.evaluate(`document.querySelector('.ml-reviews-page-user-review-container[jsinstance^="*"]').scrollIntoView({ block: 'end', inline: 'end' })`);
+			await page.waitForFunction(`document.querySelector('.ml-reviews-page-white-background > div:not(.ml-appbar):not(.ml-reviews-page-user-review-loading)').scrollHeight > ${previousHeight}`);
+			await page.waitForTimeout(delay);
+			currentReviewsCount = await page.evaluate(getReviewCount);
+			console.log(previousReviewsCount + "/" + currentReviewsCount);
+		}
+	} catch (error) {}
 };
 
 const getReviewCount = () => {
-    return document.querySelectorAll('.ml-reviews-page-user-review-container').length;
+	return document.querySelectorAll(".ml-reviews-page-user-review-container").length;
 };
 
 const getPreviousHeight = () => {
-    return document.querySelector('.ml-reviews-page-white-background > div:nth-child(2)').scrollHeight;
+	return document.querySelector(".ml-reviews-page-white-background > div:nth-child(2)").scrollHeight;
 };

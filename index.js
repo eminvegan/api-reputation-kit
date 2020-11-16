@@ -11,8 +11,8 @@ const PORT = 3000;
 //     useNewUrlParser: true,
 //     useUnifiedTopology: true
 // });
-
-app.use(bodyParser.urlencoded({ extended: true }));
+// app.use(cors());
+app.use(bodyParser.urlencoded({ extended: false }));
 app.use(bodyParser.json());
 
 routes(app);
