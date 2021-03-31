@@ -1,7 +1,8 @@
 import {
 	getAmount,
 	getFirstPage,
-	getAll
+	getAll,
+	getReviews,
 } from '../controllers/googleController';
 
 const routes = (app) => {
@@ -25,6 +26,13 @@ const routes = (app) => {
 		res.setHeader('Cache-Control', 'no-cache');
 		res.setHeader('Access-Control-Allow-Origin', '*');
 		await getAmount(req, res);
+	});
+
+	app.get('/google/:placeID/reviews', async (req, res) => {
+		res.setHeader('Connection', 'keep-alive');
+		res.setHeader('Cache-Control', 'no-cache');
+		res.setHeader('Access-Control-Allow-Origin', '*');
+		await getReviews(req, res);
 	});
 
 };
