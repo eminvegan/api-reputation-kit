@@ -12,7 +12,7 @@
     "cors": "^2.8.5",
     "express": "^4.17.1",
     "node-fetch": "^2.6.1",
-    "puppeteer": "^5.2.1",
+    "puppeteer": "^8.0.0",
     "puppeteer-autoscroll-down": "^0.1.6",
     "puppeteer-infinite-scroll": "^1.0.1"
   },
