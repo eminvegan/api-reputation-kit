@@ -20,14 +20,16 @@ export const getAmount = async (req, res) => {
     'https://www.google.com/maps/search/?api=1&query=Google&query_place_id=' +
       PID
   );
-  await page.waitForNavigation();
+  // await page.waitForNavigation();
+
+  await page.waitForTimeout(500);
 
   await page.waitForSelector('button[aria-label*="cookies"]');
-  await page.waitForTimeout(150);
+  await page.waitForTimeout(500);
   const cookieConsentBanner = await page.evaluateHandle(() => {
     return document.querySelector('button[aria-label*="cookies"]');
   });
-  await page.waitForTimeout(150);
+  await page.waitForTimeout(500);
   cookieConsentBanner.click();
 
   page.setDefaultTimeout(0);
@@ -68,14 +70,15 @@ export const getFirstPage = async (req, res) => {
     'https://www.google.com/maps/search/?api=1&query=Google&query_place_id=' +
       PID
   );
-  await page.waitForNavigation();
+  // await page.waitForNavigation();
+  await page.waitForTimeout(500);
 
   await page.waitForSelector('button[aria-label*="cookies"]');
-  await page.waitForTimeout(150);
+  await page.waitForTimeout(500);
   const cookieConsentBanner = await page.evaluateHandle(() => {
     return document.querySelector('button[aria-label*="cookies"]');
   });
-  await page.waitForTimeout(150);
+  await page.waitForTimeout(500);
   cookieConsentBanner.click();
 
   await page.waitForSelector('.ml-promotion-content');
@@ -170,14 +173,15 @@ export const getAll = async (req, res) => {
     'https://www.google.com/maps/search/?api=1&query=Google&query_place_id=' +
       PID
   );
-  await page.waitForNavigation();
+
+  await page.waitForTimeout(500);
 
   await page.waitForSelector('button[aria-label*="cookies"]');
-  await page.waitForTimeout(150);
+  await page.waitForTimeout(500);
   const cookieConsentBanner = await page.evaluateHandle(() => {
     return document.querySelector('button[aria-label*="cookies"]');
   });
-  await page.waitForTimeout(150);
+  await page.waitForTimeout(500);
   cookieConsentBanner.click();
 
   page.setDefaultTimeout(0);
@@ -268,7 +272,7 @@ export const getReviews = async (req, res) => {
   const PID = req.params.placeID;
   const browser = await puppeteer.launch({
     args: ['--disabled-setuid-sandbox', '--no-sandbox'],
-    headless: false,
+    headless: true,
   });
   const page = await browser.newPage();
   await page.setViewport({
@@ -282,15 +286,17 @@ export const getReviews = async (req, res) => {
       PID
   );
 
+  // await page.waitForNavigation();
+  await page.waitForTimeout(500);
+
   await page.waitForSelector('button[aria-label*="cookies"]');
-  await page.waitForTimeout(150);
+  await page.waitForTimeout(500);
   const cookieConsentBanner = await page.evaluateHandle(() => {
     return document.querySelector('button[aria-label*="cookies"]');
   });
-  await page.waitForTimeout(150);
+  await page.waitForTimeout(500);
   cookieConsentBanner.click();
 
-  await page.waitForNavigation();
   page.setDefaultTimeout(0);
 
   await page.setRequestInterception(true);
@@ -342,11 +348,13 @@ export const getReviews = async (req, res) => {
 
   try {
     await scrapInfiniteScrollItems(res, page, totalReviewCount, 250);
-  } catch (error) {}
+  } catch (error) {
+    console.log(error);
+  }
 
   const start1 = async () => {
     const reviews = [];
-    console.log(listEntitiesReviews.length);
+    // console.log(listEntitiesReviews.length);
     await asyncForEach(listEntitiesReviews, async (url) => {
       let array1 = [];
       const data = await fetch(url, {
@@ -382,7 +390,7 @@ export const getReviews = async (req, res) => {
       // reviews.push(array1);
     });
     // const xyz = reviews.flat(2);
-    console.log(reviews.length);
+    // console.log(reviews.length);
     await browser.close();
     res.json(reviews);
     res.end();
@@ -412,7 +420,7 @@ const scrapInfiniteScrollItems = async (res, page, totalReviewCount, delay) => {
       );
       await page.waitForTimeout(delay);
       currentReviewsCount = await page.evaluate(getReviewCount);
-      console.log(previousReviewsCount + '/' + currentReviewsCount);
+      // console.log(previousReviewsCount + '/' + currentReviewsCount);
     }
   } catch (error) {}
 };
