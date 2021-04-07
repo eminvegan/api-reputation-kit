@@ -1,7 +1,5 @@
 import express from 'express';
 import routes from './src/routes/googleRoutes';
-// import mongoose from 'mongoose';
-import bodyParser from 'body-parser';
 
 const app = express();
 const PORT = 3000;
@@ -12,8 +10,8 @@ const PORT = 3000;
 //     useUnifiedTopology: true
 // });
 // app.use(cors());
-app.use(bodyParser.urlencoded({ extended: false }));
-app.use(bodyParser.json());
+app.use(express.urlencoded({ extended: false }));
+app.use(express.json());
 
 routes(app);
 
