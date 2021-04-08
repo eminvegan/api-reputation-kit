@@ -21,14 +21,21 @@ export const getAmount = async (req, res) => {
       PID
   );
 
-  const x1 = await page.waitForSelector('button[aria-label*="Cookies"]', {
-    timeout: 1000,
-  });
+  try {
+    await page.waitForNavigation({ timeout: 1000 });
 
-  const x2 = await page.click('button[aria-label*="Cookies"]', {
-    timeout: 1000,
-  });
+    const x1 = await page.waitForSelector('button[aria-label*="Cookies"]', {
+      timeout: 1000,
+    });
 
+    const x2 = await page.click('button[aria-label*="Cookies"]', {
+      timeout: 1000,
+    });
+  } catch (error) {
+    console.log(error);
+  }
+
+  await page.waitForTimeout(500);
   page.setDefaultTimeout(0);
   await page.waitForSelector('.ml-promotion-content');
   await page.waitForTimeout(500);
@@ -68,13 +75,19 @@ export const getFirstPage = async (req, res) => {
       PID
   );
 
-  const x1 = await page.waitForSelector('button[aria-label*="Cookies"]', {
-    timeout: 1000,
-  });
+  try {
+    await page.waitForNavigation({ timeout: 1000 });
 
-  const x2 = await page.click('button[aria-label*="Cookies"]', {
-    timeout: 1000,
-  });
+    const x1 = await page.waitForSelector('button[aria-label*="Cookies"]', {
+      timeout: 1000,
+    });
+
+    const x2 = await page.click('button[aria-label*="Cookies"]', {
+      timeout: 1000,
+    });
+  } catch (error) {
+    console.log(error);
+  }
 
   await page.waitForTimeout(500);
 
@@ -171,13 +184,19 @@ export const getAll = async (req, res) => {
       PID
   );
 
-  const x1 = await page.waitForSelector('button[aria-label*="Cookies"]', {
-    timeout: 1000,
-  });
+  try {
+    await page.waitForNavigation({ timeout: 1000 });
 
-  const x2 = await page.click('button[aria-label*="Cookies"]', {
-    timeout: 1000,
-  });
+    const x1 = await page.waitForSelector('button[aria-label*="Cookies"]', {
+      timeout: 1000,
+    });
+
+    const x2 = await page.click('button[aria-label*="Cookies"]', {
+      timeout: 1000,
+    });
+  } catch (error) {
+    console.log(error);
+  }
 
   await page.waitForTimeout(500);
 
@@ -288,13 +307,19 @@ export const getReviews = async (req, res) => {
       PID
   );
 
-  const x1 = await page.waitForSelector('button[aria-label*="Cookies"]', {
-    timeout: 1000,
-  });
+  try {
+    await page.waitForNavigation({ timeout: 1000 });
 
-  const x2 = await page.click('button[aria-label*="Cookies"]', {
-    timeout: 1000,
-  });
+    const x1 = await page.waitForSelector('button[aria-label*="Cookies"]', {
+      timeout: 1000,
+    });
+
+    const x2 = await page.click('button[aria-label*="Cookies"]', {
+      timeout: 1000,
+    });
+  } catch (error) {
+    console.log(error);
+  }
 
   await page.waitForTimeout(500);
 
@@ -419,7 +444,7 @@ const scrapInfiniteScrollItems = async (res, page, totalReviewCount, delay) => {
       );
       await page.waitForTimeout(delay);
       currentReviewsCount = await page.evaluate(getReviewCount);
-      console.log(previousReviewsCount + '/' + currentReviewsCount);
+      // console.log(previousReviewsCount + '/' + currentReviewsCount);
     }
   } catch (error) {}
 };
