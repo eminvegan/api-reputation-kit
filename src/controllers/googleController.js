@@ -309,16 +309,38 @@ export const getReviews = async (req, res) => {
 
   try {
     await page.waitForNavigation({ timeout: 1000 });
+  } catch (error) {
+    // console.log(error);
+  }
 
+  try {
     const x1 = await page.waitForSelector('button[aria-label*="Cookies"]', {
       timeout: 1000,
     });
-
+  } catch (error) {
+    // console.log(error);
+  }
+  try {
     const x2 = await page.click('button[aria-label*="Cookies"]', {
       timeout: 1000,
     });
   } catch (error) {
-    console.log(error);
+    // console.log(error);
+  }
+  try {
+    const x1 = await page.waitForSelector('button[aria-label*="cookies"]', {
+      timeout: 1000,
+    });
+  } catch (error) {
+    // console.log(error);
+  }
+
+  try {
+    const x2 = await page.click('button[aria-label*="cookies"]', {
+      timeout: 1000,
+    });
+  } catch (error) {
+    // console.log(error);
   }
 
   await page.waitForTimeout(500);
@@ -437,7 +459,7 @@ const scrapInfiniteScrollItems = async (res, page, totalReviewCount, delay) => {
           ).scrollHeight
       );
       await page.evaluate(
-        `document.querySelector('.ml-reviews-page-user-review-container[jsinstance^="*"]').scrollIntoView({ block: 'end', inline: 'end' })`
+        `document.querySelector('.ml-reviews-page-user-review-container[jsinstance^="*"]').scrollIntoView({ block: 'start', inline: 'start' })`
       );
       await page.waitForFunction(
         `document.querySelector('.ml-reviews-page-white-background > div:not(.ml-appbar):not(.ml-reviews-page-user-review-loading)').scrollHeight > ${previousHeight}`
