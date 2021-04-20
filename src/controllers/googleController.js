@@ -170,7 +170,7 @@ export const getAll = async (req, res) => {
   const PID = req.params.placeID;
   const browser = await puppeteer.launch({
     args: ['--disabled-setuid-sandbox', '--no-sandbox'],
-    headless: false,
+    headless: true,
   });
   const page = await browser.newPage();
   await page.setViewport({
@@ -307,7 +307,7 @@ export const getReviews = async (req, res) => {
 
   const browser = await puppeteer.launch({
     args: ['--disabled-setuid-sandbox', '--no-sandbox'],
-    headless: false,
+    headless: true,
   });
 
   const page = await browser.newPage();
@@ -365,7 +365,7 @@ export const getReviews = async (req, res) => {
 
   await page.waitForTimeout(500);
 
-  page.setDefaultTimeout(0);
+  // page.setDefaultTimeout(0);
 
   await page.setRequestInterception(true);
   const listEntitiesReviews = [];
