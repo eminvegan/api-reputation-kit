@@ -170,7 +170,7 @@ export const getAll = async (req, res) => {
   const PID = req.params.placeID;
   const browser = await puppeteer.launch({
     args: ['--disabled-setuid-sandbox', '--no-sandbox'],
-    headless: true,
+    headless: false,
   });
   const page = await browser.newPage();
   await page.setViewport({
@@ -185,17 +185,35 @@ export const getAll = async (req, res) => {
   );
 
   try {
-    await page.waitForNavigation({ timeout: 1000 });
-
     const x1 = await page.waitForSelector('button[aria-label*="Cookies"]', {
       timeout: 1000,
     });
+  } catch (error) {
+    // console.log(error);
+  }
 
+  try {
     const x2 = await page.click('button[aria-label*="Cookies"]', {
       timeout: 1000,
     });
   } catch (error) {
-    console.log(error);
+    // console.log(error);
+  }
+  
+  try {
+    const x1 = await page.waitForSelector('button[aria-label*="cookies"]', {
+      timeout: 1000,
+    });
+  } catch (error) {
+    // console.log(error);
+  }
+
+  try {
+    const x2 = await page.click('button[aria-label*="cookies"]', {
+      timeout: 1000,
+    });
+  } catch (error) {
+    // console.log(error);
   }
 
   await page.waitForTimeout(500);
@@ -212,7 +230,7 @@ export const getAll = async (req, res) => {
   await page.waitForTimeout(500);
   const totalReviewCount = await page.evaluate(() => {
     const amount = document.querySelector(
-      '.section-rating-term > span:not(.section-rating-line-context-divider) > span:nth-child(1) > span'
+      '.section-hero-header-title-description-container [aria-label*="review"],.section-hero-header-title-description-container [aria-label*="Rezension"]'
     ).innerHTML;
     return amount.replace(/[&\/\\#,+()$~%.'":*?<>{}]/g, '');
   });
@@ -289,7 +307,7 @@ export const getReviews = async (req, res) => {
 
   const browser = await puppeteer.launch({
     args: ['--disabled-setuid-sandbox', '--no-sandbox'],
-    headless: true,
+    headless: false,
   });
 
   const page = await browser.newPage();
@@ -320,6 +338,7 @@ export const getReviews = async (req, res) => {
   } catch (error) {
     // console.log(error);
   }
+
   try {
     const x2 = await page.click('button[aria-label*="Cookies"]', {
       timeout: 1000,
@@ -327,6 +346,7 @@ export const getReviews = async (req, res) => {
   } catch (error) {
     // console.log(error);
   }
+
   try {
     const x1 = await page.waitForSelector('button[aria-label*="cookies"]', {
       timeout: 1000,
@@ -365,12 +385,24 @@ export const getReviews = async (req, res) => {
   });
   await noThanks.click();
   await page.waitForTimeout(500);
+
+
   const totalReviewCount = await page.evaluate(() => {
     const amount = document.querySelector(
-      '.section-rating-term > span:not(.section-rating-line-context-divider) > span:nth-child(1) > span'
+      '.section-hero-header-title-description-container [aria-label*="review"],.section-hero-header-title-description-container [aria-label*="Rezension"]'
     ).innerHTML;
+    // console.log(amount);
     return amount.replace(/[&\/\\#,+()$~%.'":*?<>{}]/g, '');
+    // console.log(var1);
+    return amount;
   });
+
+  // console.log(tmp);
+
+  // const totalReviewCount = 155;
+
+
+  // console.log(totalReviewCount);
   await page.waitForTimeout(500);
   const showDetails = await page.evaluateHandle(() => {
     if (
@@ -402,7 +434,7 @@ export const getReviews = async (req, res) => {
 
   const start1 = async () => {
     const reviews = [];
-    console.log(listEntitiesReviews);
+    // console.log(listEntitiesReviews);
     await asyncForEach(listEntitiesReviews, async (url) => {
       let array1 = [];
       const data = await fetch(url, {
@@ -467,8 +499,11 @@ const scrapInfiniteScrollItems = async (res, page, totalReviewCount, delay) => {
           ).scrollHeight
       );
       await page.evaluate(
-        `document.querySelector('.ml-reviews-page-user-review-container[jsinstance^="*"]').scrollIntoView({ block: 'start', inline: 'start' })`
+        `document.querySelector('.ml-reviews-page-user-review-loading').scrollIntoView({ block: 'end', inline: 'end' })`
       );
+      // await page.evaluate(
+      //   `document.querySelector('.ml-reviews-page-user-review-container[jsinstance^="*"]').scrollIntoView({ block: 'start', inline: 'start' })`
+      // );
       await page.waitForFunction(
         `document.querySelector('.ml-reviews-page-white-background > div:not(.ml-appbar):not(.ml-reviews-page-user-review-loading)').scrollHeight > ${previousHeight}`
       );
