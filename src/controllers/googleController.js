@@ -491,6 +491,7 @@ const scrapInfiniteScrollItems = async (res, page, totalReviewCount, delay) => {
     let previousReviewsCount;
     let previousHeight;
     while (currentReviewsCount <= totalReviewCount) {
+      // console.log(previousReviewsCount + '/' + currentReviewsCount);
       previousReviewsCount = currentReviewsCount;
       previousHeight = await page.evaluate(
         () =>
@@ -510,8 +511,16 @@ const scrapInfiniteScrollItems = async (res, page, totalReviewCount, delay) => {
       await page.waitForTimeout(delay);
       currentReviewsCount = await page.evaluate(getReviewCount);
       // console.log(previousReviewsCount + '/' + currentReviewsCount);
+      
+      if (currentReviewsCount == totalReviewCount) {
+        break;
+      }
+    }
+    if (currentReviewsCount == totalReviewCount) {
+      return;
     }
   } catch (error) {}
+  
 };
 
 const getReviewCount = () => {
