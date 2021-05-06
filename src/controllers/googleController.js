@@ -307,7 +307,7 @@ export const getReviews = async (req, res) => {
 
   const browser = await puppeteer.launch({
     args: ['--disabled-setuid-sandbox', '--no-sandbox'],
-    headless: false,
+    headless: true,
   });
 
   const page = await browser.newPage();
