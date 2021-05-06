@@ -307,7 +307,7 @@ export const getReviews = async (req, res) => {
 
   const browser = await puppeteer.launch({
     args: ['--disabled-setuid-sandbox', '--no-sandbox'],
-    headless: true,
+    headless: false,
   });
 
   const page = await browser.newPage();
@@ -422,8 +422,11 @@ export const getReviews = async (req, res) => {
   });
   await showReviews.click();
   await page.waitForTimeout(500);
+  // await page.waitForSelector(
+  //   '.ml-reviews-page-user-review-container[jsinstance^="*"]'
+  // );
   await page.waitForSelector(
-    '.ml-reviews-page-user-review-container[jsinstance^="*"]'
+    '.ml-reviews-page-white-background > div:not(.ml-appbar):not(.ml-reviews-page-user-review-loading):not(.mapsLiteJsUiutilAppbar__main)'
   );
 
   try {
@@ -487,29 +490,37 @@ export const getReviews = async (req, res) => {
 const scrapInfiniteScrollItems = async (res, page, totalReviewCount, delay) => {
   page.setDefaultTimeout(1339);
   let currentReviewsCount = 0;
+  // console.log(totalReviewCount);
   try {
     let previousReviewsCount;
     let previousHeight;
     while (currentReviewsCount <= totalReviewCount) {
-      // console.log(previousReviewsCount + '/' + currentReviewsCount);
+
       previousReviewsCount = currentReviewsCount;
+
       previousHeight = await page.evaluate(
         () =>
           document.querySelector(
-            '.ml-reviews-page-white-background > div:not(.ml-appbar):not(.ml-reviews-page-user-review-loading)'
+            '.ml-reviews-page-white-background > div:not(.ml-appbar):not(.ml-reviews-page-user-review-loading):not(.mapsLiteJsUiutilAppbar__main)'
           ).scrollHeight
       );
+
+      // console.log(previousHeight);
+
       await page.evaluate(
-        `document.querySelector('.ml-reviews-page-user-review-loading').scrollIntoView({ block: 'end', inline: 'end' })`
+        `document.querySelector('.mapsLiteJsReviewsReviewspage__ml-reviews-page-user-review-loading').scrollIntoView({ block: 'end', inline: 'end' })`
       );
       // await page.evaluate(
       //   `document.querySelector('.ml-reviews-page-user-review-container[jsinstance^="*"]').scrollIntoView({ block: 'start', inline: 'start' })`
       // );
       await page.waitForFunction(
-        `document.querySelector('.ml-reviews-page-white-background > div:not(.ml-appbar):not(.ml-reviews-page-user-review-loading)').scrollHeight > ${previousHeight}`
+        `document.querySelector('.ml-reviews-page-white-background > div:not(.ml-appbar):not(.ml-reviews-page-user-review-loading):not(.mapsLiteJsUiutilAppbar__main)').scrollHeight > ${previousHeight}`
       );
+
       await page.waitForTimeout(delay);
+
       currentReviewsCount = await page.evaluate(getReviewCount);
+
       // console.log(previousReviewsCount + '/' + currentReviewsCount);
       
       if (currentReviewsCount == totalReviewCount) {
