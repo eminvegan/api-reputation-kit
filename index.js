@@ -7,6 +7,7 @@ const PORT = 3000;
 
 const allowedOrigins = [
   'http://localhost:3000',
+  'http://localhost:4200',
   'https://dein-ruf.de',
   'http://dein-bewertungsprofi.de',
 ];
