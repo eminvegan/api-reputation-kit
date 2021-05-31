@@ -133,13 +133,15 @@ export const getFirstPage = async (req, res) => {
           .querySelector('.ml-reviews-page-user-review-name')
           .getAttribute('id')
           .replace('ml-reviews-page-user-review-name-', '');
-        let name = review.querySelector('.ml-reviews-page-user-review-name')
-          .innerHTML;
+        let name = review.querySelector(
+          '.ml-reviews-page-user-review-name'
+        ).innerHTML;
         let publishDate = review.querySelector(
           '.ml-reviews-page-user-review-publish-date'
         ).innerHTML;
-        let text = review.querySelector('.ml-reviews-page-user-review-text')
-          .innerHTML;
+        let text = review.querySelector(
+          '.ml-reviews-page-user-review-text'
+        ).innerHTML;
         let ratingContainer = review.querySelector(
           '.ml-rating-stars-container'
         );
@@ -199,7 +201,7 @@ export const getAll = async (req, res) => {
   } catch (error) {
     // console.log(error);
   }
-  
+
   try {
     const x1 = await page.waitForSelector('button[aria-label*="cookies"]', {
       timeout: 1000,
@@ -269,13 +271,15 @@ export const getAll = async (req, res) => {
           .querySelector('.ml-reviews-page-user-review-name')
           .getAttribute('id')
           .replace('ml-reviews-page-user-review-name-', '');
-        let name = review.querySelector('.ml-reviews-page-user-review-name')
-          .innerHTML;
+        let name = review.querySelector(
+          '.ml-reviews-page-user-review-name'
+        ).innerHTML;
         let publishDate = review.querySelector(
           '.ml-reviews-page-user-review-publish-date'
         ).innerHTML;
-        let text = review.querySelector('.ml-reviews-page-user-review-text')
-          .innerHTML;
+        let text = review.querySelector(
+          '.ml-reviews-page-user-review-text'
+        ).innerHTML;
         let ratingContainer = review.querySelector(
           '.ml-rating-stars-container'
         );
@@ -386,10 +390,9 @@ export const getReviews = async (req, res) => {
   await noThanks.click();
   await page.waitForTimeout(500);
 
-
   const totalReviewCount = await page.evaluate(() => {
     const amount = document.querySelector(
-      '.section-hero-header-title-description-container [aria-label*="review"],.section-hero-header-title-description-container [aria-label*="Rezension"]'
+      '#app > div.ml-pane.mapsLiteJsPanePanestyle__flexible.mapsLiteJsPanePanestyle__collapsed > div > div.widget-pane-content.mapsConsumerUiCommonScrollable__scrollable-y.mapsConsumerUiCommonScrollable__scrollable-show > div > div > div > div:nth-child(1) > div.mapsConsumerUiSubviewSectionHeroheadertitle__section-hero-header-title > div.mapsConsumerUiSubviewSectionHeroheadertitle__section-hero-header-title-top-container > div.mapsConsumerUiSubviewSectionHeroheadertitle__section-hero-header-title-description > div.mapsConsumerUiSubviewSectionHeroheadertitle__section-hero-header-title-description-container > div.mapsConsumerUiSubviewSectionRating__section-rating > div.gm2-body-2.mapsConsumerUiSubviewSectionRating__section-rating-line > span:nth-child(3) > span > span > span:nth-child(2) > span:nth-child(1) > span'
     ).innerHTML;
     // console.log(amount);
     return amount.replace(/[&\/\\#,+()$~%.'":*?<>{}]/g, '');
@@ -400,7 +403,6 @@ export const getReviews = async (req, res) => {
   // console.log(tmp);
 
   // const totalReviewCount = 155;
-
 
   // console.log(totalReviewCount);
   await page.waitForTimeout(500);
@@ -426,7 +428,7 @@ export const getReviews = async (req, res) => {
   //   '.ml-reviews-page-user-review-container[jsinstance^="*"]'
   // );
   await page.waitForSelector(
-    '.ml-reviews-page-white-background > div:not(.ml-appbar):not(.ml-reviews-page-user-review-loading):not(.mapsLiteJsUiutilAppbar__main)'
+    '#app > div.ml-pane-container > div.visible > div > div.mapsLiteJsReviewsReviewspage__ml-reviews-page-white-background > div:nth-child(2)'
   );
 
   try {
@@ -448,7 +450,7 @@ export const getReviews = async (req, res) => {
       const x1 = await x0.text();
       const x2 = x1.toString().replace(")]}'", '');
       const x3 = JSON.parse(x2);
-      
+
       if (x3[2] !== null) {
         if (x3[2].length > 0) {
           await asyncForEach(x3[2], (r) => {
@@ -463,7 +465,6 @@ export const getReviews = async (req, res) => {
         }
       }
 
-      
       // const start2 = async () => {
       // 	console.log(x3[2].length);
       // 	await asyncForEach(x3[2], (r) => {
@@ -495,13 +496,12 @@ const scrapInfiniteScrollItems = async (res, page, totalReviewCount, delay) => {
     let previousReviewsCount;
     let previousHeight;
     while (currentReviewsCount <= totalReviewCount) {
-
       previousReviewsCount = currentReviewsCount;
 
       previousHeight = await page.evaluate(
         () =>
           document.querySelector(
-            '.ml-reviews-page-white-background > div:not(.ml-appbar):not(.ml-reviews-page-user-review-loading):not(.mapsLiteJsUiutilAppbar__main)'
+            '#app > div.ml-pane-container > div.visible > div > div.mapsLiteJsReviewsReviewspage__ml-reviews-page-white-background > div:nth-child(2)'
           ).scrollHeight
       );
 
@@ -514,7 +514,7 @@ const scrapInfiniteScrollItems = async (res, page, totalReviewCount, delay) => {
       //   `document.querySelector('.ml-reviews-page-user-review-container[jsinstance^="*"]').scrollIntoView({ block: 'start', inline: 'start' })`
       // );
       await page.waitForFunction(
-        `document.querySelector('.ml-reviews-page-white-background > div:not(.ml-appbar):not(.ml-reviews-page-user-review-loading):not(.mapsLiteJsUiutilAppbar__main)').scrollHeight > ${previousHeight}`
+        `document.querySelector('#app > div.ml-pane-container > div.visible > div > div.mapsLiteJsReviewsReviewspage__ml-reviews-page-white-background > div:nth-child(2)').scrollHeight > ${previousHeight}`
       );
 
       await page.waitForTimeout(delay);
@@ -522,7 +522,7 @@ const scrapInfiniteScrollItems = async (res, page, totalReviewCount, delay) => {
       currentReviewsCount = await page.evaluate(getReviewCount);
 
       // console.log(previousReviewsCount + '/' + currentReviewsCount);
-      
+
       if (currentReviewsCount == totalReviewCount) {
         break;
       }
@@ -531,7 +531,6 @@ const scrapInfiniteScrollItems = async (res, page, totalReviewCount, delay) => {
       return;
     }
   } catch (error) {}
-  
 };
 
 const getReviewCount = () => {
