@@ -5,9 +5,20 @@ import cors from 'cors';
 const app = express();
 const PORT = 3000;
 
+const allowedOrigins = [
+  'http://localhost:3000',
+  'https://dein-ruf.de',
+  'http://dein-bewertungsprofi.de',
+];
+
+const options = {
+  origin: allowedOrigins,
+};
+
+app.use(cors(options));
+
 app.use(express.urlencoded({ extended: false }));
 app.use(express.json());
-app.use(cors);
 
 routes(app);
 
