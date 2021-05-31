@@ -10,6 +10,7 @@ const allowedOrigins = [
   'http://localhost:4200',
   'https://dein-ruf.de',
   'http://dein-bewertungsprofi.de',
+  'https://dein-bewertungsprofi.local:8890',
 ];
 
 const options = {
