@@ -8,6 +8,8 @@ const PORT = 3000;
 const allowedOrigins = [
   'http://localhost:3000',
   'http://localhost:4200',
+  'http://127.0.0.1:8000',
+  'https://assessmentprofessional.etechnocrat.tech',
   'https://dein-ruf.de',
   'http://dein-bewertungsprofi.de',
   'https://dein-bewertungsprofi.local:8890',
