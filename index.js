@@ -11,7 +11,7 @@ const allowedOrigins = [
   'http://127.0.0.1:8000',
   'https://assessmentprofessional.etechnocrat.tech',
   'https://dein-ruf.de',
-  'http://dein-bewertungsprofi.de',
+  'https://dein-bewertungsprofi.de',
   'https://dein-bewertungsprofi.local:8890',
 ];
 
