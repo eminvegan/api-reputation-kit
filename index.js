@@ -22,7 +22,8 @@ const allowedOrigins = [
 ];
 
 const options = {
-  origin: allowedOrigins,
+  origin: '*',
+  optionsSuccessStatus: 200,
 };
 
 app.use(cors(options));
