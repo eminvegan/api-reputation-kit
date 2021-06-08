@@ -12,7 +12,13 @@ const allowedOrigins = [
   'https://assessmentprofessional.etechnocrat.tech',
   'https://dein-ruf.de',
   'https://dein-bewertungsprofi.de',
+  'https://dein-bewertungsprofi.de/',
+  'https://dein-bewertungsprofi.de/review-reporter',
+  'https://dein-bewertungsprofi.de/review-reporter/',
   'https://dein-bewertungsprofi.local:8890',
+  'https://dein-bewertungsprofi.local:8890/',
+  'https://dein-bewertungsprofi.local:8890/review-reporter',
+  'https://dein-bewertungsprofi.local:8890/review-reporter/',
 ];
 
 const options = {
