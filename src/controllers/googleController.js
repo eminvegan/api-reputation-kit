@@ -1,4 +1,5 @@
 const fetch = require('node-fetch');
+const { Cluster } = require('puppeteer-cluster');
 import puppeteer from 'puppeteer';
 
 const iPhone = puppeteer.devices['iPhone 6'];
@@ -309,184 +310,335 @@ export const getAll = async (req, res) => {
 export const getReviews = async (req, res) => {
   const PID = req.params.placeID;
 
-  const browser = await puppeteer.launch({
-    args: ['--disabled-setuid-sandbox', '--no-sandbox'],
-    headless: true,
+  const cluster = await Cluster.launch({
+    concurrency: Cluster.CONCURRENCY_CONTEXT,
+    maxConcurrency: 13,
+    puppeteerOptions: {
+      args: ['--disabled-setuid-sandbox', '--no-sandbox'],
+      headless: true,
+    },
   });
 
-  const page = await browser.newPage();
-
-  const viewPort = await page.setViewport({
-    width: 375,
-    height: 667,
-    deviceScaleFactor: 1,
-  });
-
-  const emulate = await page.emulate(iPhone);
-
-  const navigate = await page.goto(
-    'https://www.google.com/maps/search/?api=1&query=Google&query_place_id=' +
-      PID
-  );
-
-  try {
-    await page.waitForNavigation({ timeout: 1000 });
-  } catch (error) {
-    // console.log(error);
-  }
-
-  try {
-    const x1 = await page.waitForSelector('button[aria-label*="Cookies"]', {
-      timeout: 1000,
+  await cluster.task(async ({ page, data: url }) => {
+    await page.setViewport({
+      width: 375,
+      height: 667,
+      deviceScaleFactor: 1,
     });
-  } catch (error) {
-    // console.log(error);
-  }
+    await page.emulate(iPhone);
+    await page.goto(url);
 
-  try {
-    const x2 = await page.click('button[aria-label*="Cookies"]', {
-      timeout: 1000,
-    });
-  } catch (error) {
-    // console.log(error);
-  }
+    try {
+      await page.waitForNavigation({ timeout: 1000 });
+    } catch (error) {}
 
-  try {
-    const x1 = await page.waitForSelector('button[aria-label*="cookies"]', {
-      timeout: 1000,
-    });
-  } catch (error) {
-    // console.log(error);
-  }
+    try {
+      const x1 = await page.waitForSelector('button[aria-label*="Cookies"]', { timeout: 1000 });
+    } catch (error) {}
 
-  try {
-    const x2 = await page.click('button[aria-label*="cookies"]', {
-      timeout: 1000,
-    });
-  } catch (error) {
-    // console.log(error);
-  }
+    try {
+      const x2 = await page.click('button[aria-label*="Cookies"]', { timeout: 1000 });
+    } catch (error) {}
 
-  await page.waitForTimeout(500);
+    try {
+      const x1 = await page.waitForSelector('button[aria-label*="cookies"]', { timeout: 1000 });
+    } catch (error) {}
 
-  // page.setDefaultTimeout(0);
+    try {
+      const x2 = await page.click('button[aria-label*="cookies"]', { timeout: 1000 });
+    } catch (error) {}
 
-  await page.setRequestInterception(true);
-  const listEntitiesReviews = [];
-  page.on('request', (request) => {
-    if (request.url().includes('listentitiesreviews')) {
-      listEntitiesReviews.push(request.url());
-    }
-    request.continue();
-  });
+    await page.waitForTimeout(500);
 
-  await page.waitForSelector('.ml-promotion-content');
-  await page.waitForTimeout(500);
-  const noThanks = await page.evaluateHandle(() => {
-    return document.querySelector(
-      '.ml-promotion-action-button.ml-promotion-no-button.ml-promotion-no-thanks'
-    );
-  });
-  await noThanks.click();
-  await page.waitForTimeout(500);
+    await page.setRequestInterception(true);
 
-  const totalReviewCount = await page.evaluate(() => {
-    const amount = document.querySelector(
-      '#app > div.ml-pane.mapsLiteJsPanePanestyle__flexible.mapsLiteJsPanePanestyle__collapsed > div > div.widget-pane-content.mapsConsumerUiCommonScrollable__scrollable-y.mapsConsumerUiCommonScrollable__scrollable-show > div > div > div > div:nth-child(1) > div.mapsConsumerUiSubviewSectionHeroheadertitle__section-hero-header-title > div.mapsConsumerUiSubviewSectionHeroheadertitle__section-hero-header-title-top-container > div.mapsConsumerUiSubviewSectionHeroheadertitle__section-hero-header-title-description > div.mapsConsumerUiSubviewSectionHeroheadertitle__section-hero-header-title-description-container > div.mapsConsumerUiSubviewSectionRating__section-rating > div.gm2-body-2.mapsConsumerUiSubviewSectionRating__section-rating-line > span:nth-child(3) > span > span > span:nth-child(2) > span:nth-child(1) > span'
-    ).innerHTML;
-    // console.log(amount);
-    return amount.replace(/[&\/\\#,+()$~%.'":*?<>{}]/g, '');
-    // console.log(var1);
-    return amount;
-  });
+    const listEntitiesReviews = [];
 
-  // console.log(tmp);
-
-  // const totalReviewCount = 155;
-
-  // console.log(totalReviewCount);
-  await page.waitForTimeout(500);
-  const showDetails = await page.evaluateHandle(() => {
-    if (
-      document.querySelector('[aria-label*="details"]') != 'undefined' &&
-      document.querySelector('[aria-label*="details"]') != null
-    ) {
-      return document.querySelector('[aria-label*="details"]');
-    } else {
-      return document.querySelector('[aria-label*="Details"]');
-    }
-  });
-  await showDetails.click();
-  await page.waitForTimeout(500);
-  await page.waitForSelector('button[jsaction="pane.rating.moreReviews"]');
-  const showReviews = await page.evaluateHandle(() => {
-    return document.querySelector('button[jsaction="pane.rating.moreReviews"]');
-  });
-  await showReviews.click();
-  await page.waitForTimeout(500);
-  // await page.waitForSelector(
-  //   '.ml-reviews-page-user-review-container[jsinstance^="*"]'
-  // );
-  await page.waitForSelector(
-    '#app > div.ml-pane-container > div.visible > div > div.mapsLiteJsReviewsReviewspage__ml-reviews-page-white-background > div:nth-child(2)'
-  );
-
-  try {
-    await scrapInfiniteScrollItems(res, page, totalReviewCount, 250);
-  } catch (error) {
-    console.log(error);
-  }
-
-  const start1 = async () => {
-    const reviews = [];
-    // console.log(listEntitiesReviews);
-    await asyncForEach(listEntitiesReviews, async (url) => {
-      let array1 = [];
-      const data = await fetch(url, {
-        method: 'get',
-        headers: { 'Content-Type': 'application/json' },
-      });
-      const x0 = await data;
-      const x1 = await x0.text();
-      const x2 = x1.toString().replace(")]}'", '');
-      const x3 = JSON.parse(x2);
-
-      if (x3[2] !== null) {
-        if (x3[2].length > 0) {
-          await asyncForEach(x3[2], (r) => {
-            const uid = r[6];
-            const name = r[60][1];
-            const publishDate = r[27];
-            const text = r[3];
-            const rating = r[4];
-            const url = r[18];
-            reviews.push({ uid, name, publishDate, text, rating, url });
-          });
-        }
+    page.on('request', (request) => {
+      if (request.url().includes('listentitiesreviews')) {
+        listEntitiesReviews.push(request.url());
       }
-
-      // const start2 = async () => {
-      // 	console.log(x3[2].length);
-      // 	await asyncForEach(x3[2], (r) => {
-      // 		const uid = r[6];
-      // 		const name = r[60][1];
-      // 		const publishDate = r[27];
-      // 		const text = r[3];
-      // 		const rating = r[4];
-      // 		const url = r[18];
-      // 		reviews.push({ uid, name, publishDate, text, rating, url });
-      // 	});
-      // };
-      // start2();
-      // reviews.push(array1);
+      request.continue();
     });
-    // const xyz = reviews.flat(2);
-    await browser.close();
-    res.json(reviews);
-    res.end();
-  };
-  start1();
+
+    await page.waitForSelector('.ml-promotion-content');
+
+    await page.waitForTimeout(500);
+
+    const noThanks = await page.evaluateHandle(() => {
+      return document.querySelector(
+        '.ml-promotion-action-button.ml-promotion-no-button.ml-promotion-no-thanks'
+      );
+    });
+
+    await noThanks.click();
+
+    await page.waitForTimeout(500);
+
+    const totalReviewCount = await page.evaluate(() => {
+      const amount = document.querySelector(
+        '#app > div.ml-pane.mapsLiteJsPanePanestyle__flexible.mapsLiteJsPanePanestyle__collapsed > div > div.widget-pane-content.mapsConsumerUiCommonScrollable__scrollable-y.mapsConsumerUiCommonScrollable__scrollable-show > div > div > div > div:nth-child(1) > div.mapsConsumerUiSubviewSectionHeroheadertitle__section-hero-header-title > div.mapsConsumerUiSubviewSectionHeroheadertitle__section-hero-header-title-top-container > div.mapsConsumerUiSubviewSectionHeroheadertitle__section-hero-header-title-description > div.mapsConsumerUiSubviewSectionHeroheadertitle__section-hero-header-title-description-container > div.mapsConsumerUiSubviewSectionRating__section-rating > div.gm2-body-2.mapsConsumerUiSubviewSectionRating__section-rating-line > span:nth-child(3) > span > span > span:nth-child(2) > span:nth-child(1) > span'
+      ).innerHTML;
+      return amount.replace(/[&\/\\#,+()$~%.'":*?<>{}]/g, '');
+    });
+
+    await page.waitForTimeout(500);
+
+    const showDetails = await page.evaluateHandle(() => {
+      if (
+        document.querySelector('[aria-label*="details"]') != 'undefined' &&
+        document.querySelector('[aria-label*="details"]') != null
+      ) {
+        return document.querySelector('[aria-label*="details"]');
+      } else {
+        return document.querySelector('[aria-label*="Details"]');
+      }
+    });
+
+    await showDetails.click();
+
+    await page.waitForTimeout(500);
+
+    await page.waitForSelector('button[jsaction="pane.rating.moreReviews"]');
+
+    const showReviews = await page.evaluateHandle(() => {
+      return document.querySelector('button[jsaction="pane.rating.moreReviews"]');
+    });
+
+    await showReviews.click();
+
+    await page.waitForTimeout(500);
+
+    await page.waitForSelector(
+      '#app > div.ml-pane-container > div.visible > div > div.mapsLiteJsReviewsReviewspage__ml-reviews-page-white-background > div:nth-child(2)'
+    );
+
+    try {
+      await scrapInfiniteScrollItems(res, page, totalReviewCount, 250);
+    } catch (error) {
+      console.log(error);
+    }
+
+    const start1 = async () => {
+      const reviews = [];
+      await asyncForEach(listEntitiesReviews, async (url) => {
+        let array1 = [];
+        const data = await fetch(url, {
+          method: 'get',
+          headers: { 'Content-Type': 'application/json' },
+        });
+        const x0 = await data;
+        const x1 = await x0.text();
+        const x2 = x1.toString().replace(")]}'", '');
+        const x3 = JSON.parse(x2);
+  
+        if (x3[2] !== null) {
+          if (x3[2].length > 0) {
+            await asyncForEach(x3[2], (r) => {
+              const uid = r[6];
+              const name = r[60][1];
+              const publishDate = r[27];
+              const text = r[3];
+              const rating = r[4];
+              const url = r[18];
+              reviews.push({ uid, name, publishDate, text, rating, url });
+            });
+          }
+        }
+      });
+      await cluster.idle();
+      await cluster.close();
+      res.json(reviews);
+      res.end();
+    };
+
+    start1();
+  });
+
+  cluster.queue(`https://www.google.com/maps/search/?api=1&query=Google&query_place_id=${PID}`);
 };
+
+// export const getReviews = async (req, res) => {
+//   const PID = req.params.placeID;
+
+//   const browser = await puppeteer.launch({
+//     args: ['--disabled-setuid-sandbox', '--no-sandbox'],
+//     headless: false,
+//   });
+
+//   const page = await browser.newPage();
+
+//   const viewPort = await page.setViewport({
+//     width: 375,
+//     height: 667,
+//     deviceScaleFactor: 1,
+//   });
+
+//   const emulate = await page.emulate(iPhone);
+
+//   const navigate = await page.goto(
+//     'https://www.google.com/maps/search/?api=1&query=Google&query_place_id=' +
+//       PID
+//   );
+
+//   try {
+//     await page.waitForNavigation({ timeout: 1000 });
+//   } catch (error) {
+//     // console.log(error);
+//   }
+
+//   try {
+//     const x1 = await page.waitForSelector('button[aria-label*="Cookies"]', {
+//       timeout: 1000,
+//     });
+//   } catch (error) {
+//     // console.log(error);
+//   }
+
+//   try {
+//     const x2 = await page.click('button[aria-label*="Cookies"]', {
+//       timeout: 1000,
+//     });
+//   } catch (error) {
+//     // console.log(error);
+//   }
+
+//   try {
+//     const x1 = await page.waitForSelector('button[aria-label*="cookies"]', {
+//       timeout: 1000,
+//     });
+//   } catch (error) {
+//     // console.log(error);
+//   }
+
+//   try {
+//     const x2 = await page.click('button[aria-label*="cookies"]', {
+//       timeout: 1000,
+//     });
+//   } catch (error) {
+//     // console.log(error);
+//   }
+
+//   await page.waitForTimeout(500);
+
+//   // page.setDefaultTimeout(0);
+
+//   await page.setRequestInterception(true);
+//   const listEntitiesReviews = [];
+//   page.on('request', (request) => {
+//     if (request.url().includes('listentitiesreviews')) {
+//       listEntitiesReviews.push(request.url());
+//     }
+//     request.continue();
+//   });
+
+//   await page.waitForSelector('.ml-promotion-content');
+//   await page.waitForTimeout(500);
+//   const noThanks = await page.evaluateHandle(() => {
+//     return document.querySelector(
+//       '.ml-promotion-action-button.ml-promotion-no-button.ml-promotion-no-thanks'
+//     );
+//   });
+//   await noThanks.click();
+//   await page.waitForTimeout(500);
+
+//   const totalReviewCount = await page.evaluate(() => {
+//     const amount = document.querySelector(
+//       '#app > div.ml-pane.mapsLiteJsPanePanestyle__flexible.mapsLiteJsPanePanestyle__collapsed > div > div.widget-pane-content.mapsConsumerUiCommonScrollable__scrollable-y.mapsConsumerUiCommonScrollable__scrollable-show > div > div > div > div:nth-child(1) > div.mapsConsumerUiSubviewSectionHeroheadertitle__section-hero-header-title > div.mapsConsumerUiSubviewSectionHeroheadertitle__section-hero-header-title-top-container > div.mapsConsumerUiSubviewSectionHeroheadertitle__section-hero-header-title-description > div.mapsConsumerUiSubviewSectionHeroheadertitle__section-hero-header-title-description-container > div.mapsConsumerUiSubviewSectionRating__section-rating > div.gm2-body-2.mapsConsumerUiSubviewSectionRating__section-rating-line > span:nth-child(3) > span > span > span:nth-child(2) > span:nth-child(1) > span'
+//     ).innerHTML;
+//     // console.log(amount);
+//     return amount.replace(/[&\/\\#,+()$~%.'":*?<>{}]/g, '');
+//     // console.log(var1);
+//     return amount;
+//   });
+
+//   // console.log(tmp);
+
+//   // const totalReviewCount = 155;
+
+//   // console.log(totalReviewCount);
+//   await page.waitForTimeout(500);
+//   const showDetails = await page.evaluateHandle(() => {
+//     if (
+//       document.querySelector('[aria-label*="details"]') != 'undefined' &&
+//       document.querySelector('[aria-label*="details"]') != null
+//     ) {
+//       return document.querySelector('[aria-label*="details"]');
+//     } else {
+//       return document.querySelector('[aria-label*="Details"]');
+//     }
+//   });
+//   await showDetails.click();
+//   await page.waitForTimeout(500);
+//   await page.waitForSelector('button[jsaction="pane.rating.moreReviews"]');
+//   const showReviews = await page.evaluateHandle(() => {
+//     return document.querySelector('button[jsaction="pane.rating.moreReviews"]');
+//   });
+//   await showReviews.click();
+//   await page.waitForTimeout(500);
+//   // await page.waitForSelector(
+//   //   '.ml-reviews-page-user-review-container[jsinstance^="*"]'
+//   // );
+//   await page.waitForSelector(
+//     '#app > div.ml-pane-container > div.visible > div > div.mapsLiteJsReviewsReviewspage__ml-reviews-page-white-background > div:nth-child(2)'
+//   );
+
+//   try {
+//     await scrapInfiniteScrollItems(res, page, totalReviewCount, 250);
+//   } catch (error) {
+//     console.log(error);
+//   }
+
+//   const start1 = async () => {
+//     const reviews = [];
+//     // console.log(listEntitiesReviews);
+//     await asyncForEach(listEntitiesReviews, async (url) => {
+//       let array1 = [];
+//       const data = await fetch(url, {
+//         method: 'get',
+//         headers: { 'Content-Type': 'application/json' },
+//       });
+//       const x0 = await data;
+//       const x1 = await x0.text();
+//       const x2 = x1.toString().replace(")]}'", '');
+//       const x3 = JSON.parse(x2);
+
+//       if (x3[2] !== null) {
+//         if (x3[2].length > 0) {
+//           await asyncForEach(x3[2], (r) => {
+//             const uid = r[6];
+//             const name = r[60][1];
+//             const publishDate = r[27];
+//             const text = r[3];
+//             const rating = r[4];
+//             const url = r[18];
+//             reviews.push({ uid, name, publishDate, text, rating, url });
+//           });
+//         }
+//       }
+
+//       // const start2 = async () => {
+//       // 	console.log(x3[2].length);
+//       // 	await asyncForEach(x3[2], (r) => {
+//       // 		const uid = r[6];
+//       // 		const name = r[60][1];
+//       // 		const publishDate = r[27];
+//       // 		const text = r[3];
+//       // 		const rating = r[4];
+//       // 		const url = r[18];
+//       // 		reviews.push({ uid, name, publishDate, text, rating, url });
+//       // 	});
+//       // };
+//       // start2();
+//       // reviews.push(array1);
+//     });
+//     // const xyz = reviews.flat(2);
+//     await browser.close();
+//     res.json(reviews);
+//     res.end();
+//   };
+//   start1();
+// };
 
 const scrapInfiniteScrollItems = async (res, page, totalReviewCount, delay) => {
   page.setDefaultTimeout(1339);
