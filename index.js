@@ -21,10 +21,10 @@ const PORT = 3000;
 //   'https://dein-bewertungsprofi.local:8890/review-reporter/',
 // ];
 
-// const options = {
-//   origin: '*',
-//   optionsSuccessStatus: 200,
-// };
+const options = {
+  origin: '*',
+  optionsSuccessStatus: 200,
+};
 
 app.use(cors());
 
