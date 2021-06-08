@@ -5,8 +5,15 @@ import {
   getReviews,
 } from '../controllers/googleController';
 
+var cors = require('cors');
+
+const options = {
+  origin: '*',
+  optionsSuccessStatus: 200,
+};
+
 const routes = (app) => {
-  app.get('/google/:placeID/all', async (req, res) => {
+  app.get('/google/:placeID/all', cors(options), async (req, res) => {
     res.setHeader('Connection', 'keep-alive');
     res.setHeader('Cache-Control', 'no-cache');
     res.setHeader('Access-Control-Allow-Origin', '*');
@@ -14,7 +21,7 @@ const routes = (app) => {
     await getAll(req, res);
   });
 
-  app.get('/google/:placeID/page', async (req, res) => {
+  app.get('/google/:placeID/page', cors(options), async (req, res) => {
     res.setHeader('Connection', 'keep-alive');
     res.setHeader('Cache-Control', 'no-cache');
     res.setHeader('Access-Control-Allow-Origin', '*');
@@ -22,7 +29,7 @@ const routes = (app) => {
     await getFirstPage(req, res);
   });
 
-  app.get('/google/:placeID/amount', async (req, res) => {
+  app.get('/google/:placeID/amount', cors(options), async (req, res) => {
     res.setHeader('Connection', 'keep-alive');
     res.setHeader('Cache-Control', 'no-cache');
     res.setHeader('Access-Control-Allow-Origin', '*');
@@ -30,7 +37,7 @@ const routes = (app) => {
     await getAmount(req, res);
   });
 
-  app.get('/google/:placeID/reviews', async (req, res) => {
+  app.get('/google/:placeID/reviews', cors(options), async (req, res, next) => {
     res.setHeader('Connection', 'keep-alive');
     res.setHeader('Cache-Control', 'no-cache');
     res.setHeader('Access-Control-Allow-Origin', '*');
