@@ -10,6 +10,7 @@ const routes = (app) => {
     res.setHeader('Connection', 'keep-alive');
     res.setHeader('Cache-Control', 'no-cache');
     res.setHeader('Access-Control-Allow-Origin', '*');
+    res.header("Access-Control-Allow-Headers", "Origin, X-Requested-With, Content-Type, Accept");
     await getAll(req, res);
   });
 
@@ -17,6 +18,7 @@ const routes = (app) => {
     res.setHeader('Connection', 'keep-alive');
     res.setHeader('Cache-Control', 'no-cache');
     res.setHeader('Access-Control-Allow-Origin', '*');
+    res.header("Access-Control-Allow-Headers", "Origin, X-Requested-With, Content-Type, Accept");
     await getFirstPage(req, res);
   });
 
@@ -24,6 +26,7 @@ const routes = (app) => {
     res.setHeader('Connection', 'keep-alive');
     res.setHeader('Cache-Control', 'no-cache');
     res.setHeader('Access-Control-Allow-Origin', '*');
+    res.header("Access-Control-Allow-Headers", "Origin, X-Requested-With, Content-Type, Accept");
     await getAmount(req, res);
   });
 
@@ -31,6 +34,7 @@ const routes = (app) => {
     res.setHeader('Connection', 'keep-alive');
     res.setHeader('Cache-Control', 'no-cache');
     res.setHeader('Access-Control-Allow-Origin', '*');
+    res.header("Access-Control-Allow-Headers", "Origin, X-Requested-With, Content-Type, Accept");
     await getReviews(req, res);
   });
 };
