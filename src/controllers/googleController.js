@@ -312,10 +312,10 @@ export const getReviews = async (req, res, next) => {
 
   const cluster = await Cluster.launch({
     concurrency: Cluster.CONCURRENCY_CONTEXT,
-    maxConcurrency: 13,
+    maxConcurrency: 2,
     puppeteerOptions: {
       args: ['--disabled-setuid-sandbox', '--no-sandbox'],
-      headless: true,
+      headless: false,
     },
   });
 
@@ -677,7 +677,7 @@ const scrapInfiniteScrollItems = async (res, page, totalReviewCount, delay) => {
 
       currentReviewsCount = await page.evaluate(getReviewCount);
 
-      // console.log(previousReviewsCount + '/' + currentReviewsCount);
+      console.log(previousReviewsCount + '/' + currentReviewsCount);
 
       if (currentReviewsCount == totalReviewCount) {
         break;
@@ -690,7 +690,7 @@ const scrapInfiniteScrollItems = async (res, page, totalReviewCount, delay) => {
 };
 
 const getReviewCount = () => {
-  return document.querySelectorAll('.ml-reviews-page-user-review-container')
+  return document.querySelectorAll('.mapsLiteJsReviewsReviewspage__ml-reviews-page-user-review-container')
     .length;
 };
 
