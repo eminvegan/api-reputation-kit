@@ -307,7 +307,7 @@ export const getAll = async (req, res) => {
   res.end();
 };
 
-export const getReviews = async (req, res) => {
+export const getReviews = async (req, res, next) => {
   const PID = req.params.placeID;
 
   const cluster = await Cluster.launch({
@@ -448,6 +448,10 @@ export const getReviews = async (req, res) => {
       });
       await cluster.idle();
       await cluster.close();
+      res.setHeader('Connection', 'keep-alive');
+      res.setHeader('Cache-Control', 'no-cache');
+      res.setHeader('Access-Control-Allow-Origin', '*');
+      res.header("Access-Control-Allow-Headers", "Origin, X-Requested-With, Content-Type, Accept");
       res.json(reviews);
       res.end();
     };
