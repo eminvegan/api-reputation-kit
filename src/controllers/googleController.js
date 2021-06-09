@@ -315,7 +315,7 @@ export const getReviews = async (req, res, next) => {
     maxConcurrency: 13,
     puppeteerOptions: {
       args: ['--disabled-setuid-sandbox', '--no-sandbox'],
-      headless: true,
+      headless: false,
     },
   });
 
@@ -448,10 +448,10 @@ export const getReviews = async (req, res, next) => {
       });
       await cluster.idle();
       await cluster.close();
-      res.setHeader('Connection', 'keep-alive');
-      res.setHeader('Cache-Control', 'no-cache');
-      res.setHeader('Access-Control-Allow-Origin', '*');
-      res.header("Access-Control-Allow-Headers", "Origin, X-Requested-With, Content-Type, Accept");
+      // res.setHeader('Connection', 'keep-alive');
+      // res.setHeader('Cache-Control', 'no-cache');
+      // res.setHeader('Access-Control-Allow-Origin', '*');
+      // res.header("Access-Control-Allow-Headers", "Origin, X-Requested-With, Content-Type, Accept");
       res.json(reviews);
       res.end();
     };
