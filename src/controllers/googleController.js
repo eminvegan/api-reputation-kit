@@ -315,7 +315,7 @@ export const getReviews = async (req, res, next) => {
     maxConcurrency: 13,
     puppeteerOptions: {
       args: ['--disabled-setuid-sandbox', '--no-sandbox'],
-      headless: false,
+      headless: true,
     },
   });
 
