@@ -527,10 +527,7 @@ export const getReviews = async (req, res) => {
 
   const emulate = await page.emulate(iPhone);
 
-  const navigate = await page.goto(
-    'https://www.google.com/maps/search/?api=1&query=Google&query_place_id=' +
-      PID
-  );
+  const navigate = await page.goto(`https://www.google.com/maps/search/?api=1&query=Google&query_place_id=${PID}&hl=en`);
 
   try {
     await page.waitForNavigation({ timeout: 1000 });
@@ -660,6 +657,7 @@ export const getReviews = async (req, res) => {
     );
   } catch (error) {
     console.log(error);
+    console.log(page.url());
   }
 
   try {
@@ -667,40 +665,6 @@ export const getReviews = async (req, res) => {
   } catch (error) {
     console.log(error);
   }
-
-  // const start1 = async () => {
-  //   const reviews = [];
-  //   await asyncForEach(listEntitiesReviews, async (url) => {
-  //     let array1 = [];
-  //     const data = await fetch(url, {
-  //       method: 'get',
-  //       headers: { 'Content-Type': 'application/json' },
-  //     });
-  //     const x0 = await data;
-  //     const x1 = await x0.text();
-  //     const x2 = x1.toString().replace(")]}'", '');
-  //     const x3 = JSON.parse(x2);
-
-  //     if (x3[2] !== null) {
-  //       if (x3[2].length > 0) {
-  //         await asyncForEach(x3[2], (r) => {
-  //           const uid = r[6];
-  //           const name = r[60][1];
-  //           const publishDate = r[27];
-  //           const text = r[3];
-  //           const rating = r[4];
-  //           const url = r[18];
-  //           reviews.push({ uid, name, publishDate, text, rating, url });
-  //         });
-  //       }
-  //     }
-  //   });
-  //   // const xyz = reviews.flat(2);
-  //   await browser.close();
-  //   res.json(reviews);
-  //   res.end();
-  // };
-  // start1();
 
   await browser.close();
   res.setHeader('Connection', 'keep-alive');
