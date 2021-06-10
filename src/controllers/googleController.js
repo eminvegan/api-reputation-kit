@@ -684,8 +684,9 @@ export const getReviews = async (req, res) => {
     const reviews = [];
     await asyncForEach(listEntitiesReviews, async (url, index) => {
       console.log(`Fetching URL ${index + 1}/${listEntitiesReviews.length}...`);
+      let data;
       try {
-        const data = await fetch(url, {
+        data = await fetch(url, {
           method: 'get',
           headers: { 'Content-Type': 'application/json' },
         });
