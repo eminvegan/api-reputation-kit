@@ -578,7 +578,6 @@ export const getReviews = async (req, res) => {
 
   page.on('request', async (request) => {
     if (request.url().includes('listentitiesreviews')) {
-      listEntitiesReviews.push(request.url());
       const data = await fetch(request.url(), {
         method: 'get',
         headers: { 'Content-Type': 'application/json' },
@@ -587,7 +586,6 @@ export const getReviews = async (req, res) => {
       const x1 = await x0.text();
       const x2 = x1.toString().replace(")]}'", '');
       const x3 = JSON.parse(x2);
-
       if (x3[2] !== null) {
         if (x3[2].length > 0) {
           await asyncForEach(x3[2], (r, index) => {
@@ -665,7 +663,7 @@ export const getReviews = async (req, res) => {
   }
 
   try {
-    await scrapInfiniteScrollItems(res, page, totalReviewCount, 150);
+    await scrapInfiniteScrollItems(res, page, totalReviewCount, 250);
   } catch (error) {
     console.log(error);
   }
@@ -715,48 +713,32 @@ export const getReviews = async (req, res) => {
 const scrapInfiniteScrollItems = async (res, page, totalReviewCount, delay) => {
   page.setDefaultTimeout(3000000);
   let currentReviewsCount = 0;
-  // console.log(totalReviewCount);
   try {
     let previousReviewsCount;
     let previousHeight;
     while (currentReviewsCount <= totalReviewCount) {
       previousReviewsCount = currentReviewsCount;
-
       previousHeight = await page.evaluate(
         () =>
           document.querySelector(
             '#app > div.ml-pane-container > div.visible > div > div.mapsLiteJsReviewsReviewspage__ml-reviews-page-white-background > div:nth-child(2)'
           ).scrollHeight
       );
-
-      // console.log(previousHeight);
-
       await page.evaluate(
         `document.querySelector('.mapsLiteJsReviewsReviewspage__ml-reviews-page-user-review-loading').scrollIntoView({ block: 'end', inline: 'end' })`
       );
-      // await page.evaluate(
-      //   `document.querySelector('.ml-reviews-page-user-review-container[jsinstance^="*"]').scrollIntoView({ block: 'start', inline: 'start' })`
-      // );
       await page.waitForFunction(
         `document.querySelector('#app > div.ml-pane-container > div.visible > div > div.mapsLiteJsReviewsReviewspage__ml-reviews-page-white-background > div:nth-child(2)').scrollHeight > ${previousHeight}`
       );
-
       await page.waitForTimeout(delay);
-
       currentReviewsCount = await page.evaluate(getReviewCount);
-
-      // console.log(`previousReviewsCount ${previousReviewsCount} + '/' + totalReviewCount ${totalReviewCount}`);
       console.log(reviews.length);
       console.log(`currentReviewsCount ${currentReviewsCount} + '/' + totalReviewCount ${totalReviewCount}`);
-
       if (reviews.length == totalReviewCount) {
-        await page.waitForTimeout(1339);
+        await page.waitForTimeout(2222);
         break;
       }
     }
-    // if (currentReviewsCount == totalReviewCount) {
-    //   return;
-    // }
   } catch (error) {
     console.log(error);
   }
