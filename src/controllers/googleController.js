@@ -684,36 +684,34 @@ export const getReviews = async (req, res) => {
     const reviews = [];
     await asyncForEach(listEntitiesReviews, async (url, index) => {
       console.log(`Fetching URL ${index + 1}/${listEntitiesReviews.length}...`);
-      let data;
       try {
-        data = await fetch(url, {
+        const data = await fetch(url, {
           method: 'get',
           headers: { 'Content-Type': 'application/json' },
         });
+        console.log(`Fetching finished.`);
+        console.log(`Parsing fetched data...`);
+        const x0 = await data;
+        const x1 = await x0.text();
+        const x2 = x1.toString().replace(")]}'", '');
+        const x3 = JSON.parse(x2);
+        if (x3[2] !== null) {
+          if (x3[2].length > 0) {
+            await asyncForEach(x3[2], (r, index) => {
+              console.log(index);
+              const uid = r[6];
+              const name = r[60][1];
+              const publishDate = r[27];
+              const text = r[3];
+              const rating = r[4];
+              const url = r[18];
+              reviews.push({ uid, name, publishDate, text, rating, url });
+            });
+            console.log(`Parsing finished.`);
+          }
+        }
       } catch (error) {
         console.log(error);
-      }
-      console.log(`Fetching finished.`);
-      console.log(`Parsing fetched data...`);
-      const x0 = await data;
-      const x1 = await x0.text();
-      const x2 = x1.toString().replace(")]}'", '');
-      const x3 = JSON.parse(x2);
-
-      if (x3[2] !== null) {
-        if (x3[2].length > 0) {
-          await asyncForEach(x3[2], (r, index) => {
-            console.log(index);
-            const uid = r[6];
-            const name = r[60][1];
-            const publishDate = r[27];
-            const text = r[3];
-            const rating = r[4];
-            const url = r[18];
-            reviews.push({ uid, name, publishDate, text, rating, url });
-          });
-          console.log(`Parsing finished.`);
-        }
       }
     });
     await browser.close();
