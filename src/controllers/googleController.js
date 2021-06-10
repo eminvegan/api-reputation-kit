@@ -535,7 +535,7 @@ export const getReviews = async (req, res) => {
   try {
     await page.waitForNavigation({ timeout: 1000 });
   } catch (error) {
-    // console.log(error);
+    console.log(error);
   }
 
   try {
@@ -543,7 +543,7 @@ export const getReviews = async (req, res) => {
       timeout: 1000,
     });
   } catch (error) {
-    // console.log(error);
+    console.log(error);
   }
 
   try {
@@ -551,7 +551,7 @@ export const getReviews = async (req, res) => {
       timeout: 1000,
     });
   } catch (error) {
-    // console.log(error);
+    console.log(error);
   }
 
   try {
@@ -559,7 +559,7 @@ export const getReviews = async (req, res) => {
       timeout: 1000,
     });
   } catch (error) {
-    // console.log(error);
+    console.log(error);
   }
 
   try {
@@ -567,16 +567,15 @@ export const getReviews = async (req, res) => {
       timeout: 1000,
     });
   } catch (error) {
-    // console.log(error);
+    console.log(error);
   }
 
   await page.waitForTimeout(500);
 
-  // page.setDefaultTimeout(0);
-
   await page.setRequestInterception(true);
+
   const listEntitiesReviews = [];
-  // const reviews = [];
+
   page.on('request', async (request) => {
     if (request.url().includes('listentitiesreviews')) {
       listEntitiesReviews.push(request.url());
@@ -607,13 +606,17 @@ export const getReviews = async (req, res) => {
   });
 
   await page.waitForSelector('.ml-promotion-content');
+
   await page.waitForTimeout(500);
+
   const noThanks = await page.evaluateHandle(() => {
     return document.querySelector(
       '.ml-promotion-action-button.ml-promotion-no-button.ml-promotion-no-thanks'
     );
   });
+
   await noThanks.click();
+
   await page.waitForTimeout(500);
 
   const totalReviewCount = await page.evaluate(() => {
@@ -626,12 +629,8 @@ export const getReviews = async (req, res) => {
     return amount;
   });
 
-  // console.log(tmp);
-
-  // const totalReviewCount = 155;
-
-  // console.log(totalReviewCount);
   await page.waitForTimeout(500);
+
   const showDetails = await page.evaluateHandle(() => {
     if (
       document.querySelector('[aria-label*="details"]') != 'undefined' &&
@@ -642,23 +641,31 @@ export const getReviews = async (req, res) => {
       return document.querySelector('[aria-label*="Details"]');
     }
   });
+
   await showDetails.click();
+
   await page.waitForTimeout(500);
+
   await page.waitForSelector('button[jsaction="pane.rating.moreReviews"]');
+
   const showReviews = await page.evaluateHandle(() => {
     return document.querySelector('button[jsaction="pane.rating.moreReviews"]');
   });
+
   await showReviews.click();
+
   await page.waitForTimeout(500);
-  // await page.waitForSelector(
-  //   '.ml-reviews-page-user-review-container[jsinstance^="*"]'
-  // );
-  await page.waitForSelector(
-    '#app > div.ml-pane-container > div.visible > div > div.mapsLiteJsReviewsReviewspage__ml-reviews-page-white-background > div:nth-child(2)'
-  );
 
   try {
-    await scrapInfiniteScrollItems(res, page, totalReviewCount, 0);
+    await page.waitForSelector(
+      '#app > div.ml-pane-container > div.visible > div > div.mapsLiteJsReviewsReviewspage__ml-reviews-page-white-background > div:nth-child(2)'
+    );
+  } catch (error) {
+    console.log(error);
+  }
+
+  try {
+    await scrapInfiniteScrollItems(res, page, totalReviewCount, 150);
   } catch (error) {
     console.log(error);
   }
