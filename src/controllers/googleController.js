@@ -601,17 +601,24 @@ export const getReviews = async (req, res) => {
     request.continue();
   });
 
-  await page.waitForSelector('.ml-promotion-content');
+  try {
+    await page.waitForSelector('.ml-promotion-content');
+  } catch (error) {
+    console.log(error);
+  }
 
   await page.waitForTimeout(500);
 
-  const noThanks = await page.evaluateHandle(() => {
-    return document.querySelector(
-      '.ml-promotion-action-button.ml-promotion-no-button.ml-promotion-no-thanks'
-    );
-  });
-
-  await noThanks.click();
+  try {
+    const noThanks = await page.evaluateHandle(() => {
+      return document.querySelector(
+        '.ml-promotion-action-button.ml-promotion-no-button.ml-promotion-no-thanks'
+      );
+    });
+    await noThanks.click();
+  } catch (error) {
+    console.log(error);
+  }
 
   await page.waitForTimeout(500);
 
@@ -627,28 +634,33 @@ export const getReviews = async (req, res) => {
 
   await page.waitForTimeout(500);
 
-  const showDetails = await page.evaluateHandle(() => {
-    if (
-      document.querySelector('[aria-label*="details"]') != 'undefined' &&
-      document.querySelector('[aria-label*="details"]') != null
-    ) {
-      return document.querySelector('[aria-label*="details"]');
-    } else {
-      return document.querySelector('[aria-label*="Details"]');
-    }
-  });
-
-  await showDetails.click();
+  try {
+    const showDetails = await page.evaluateHandle(() => {
+      if (
+        document.querySelector('[aria-label*="details"]') != 'undefined' &&
+        document.querySelector('[aria-label*="details"]') != null
+      ) {
+        return document.querySelector('[aria-label*="details"]');
+      } else {
+        return document.querySelector('[aria-label*="Details"]');
+      }
+    });
+    await showDetails.click();
+  } catch (error) {
+    console.log(error);
+  }
 
   await page.waitForTimeout(500);
 
-  await page.waitForSelector('button[jsaction="pane.rating.moreReviews"]');
-
-  const showReviews = await page.evaluateHandle(() => {
-    return document.querySelector('button[jsaction="pane.rating.moreReviews"]');
-  });
-
-  await showReviews.click();
+  try {
+    await page.waitForSelector('button[jsaction="pane.rating.moreReviews"]');
+    const showReviews = await page.evaluateHandle(() => {
+      return document.querySelector('button[jsaction="pane.rating.moreReviews"]');
+    });
+    await showReviews.click();
+  } catch (error) {
+    console.log(error);
+  }
 
   await page.waitForTimeout(500);
 
