@@ -579,6 +579,7 @@ export const getReviews = async (req, res) => {
         method: 'get',
         headers: { 'Content-Type': 'application/json' },
       });
+      await page.waitForTimeout(500);
       const x0 = await data;
       const x1 = await x0.text();
       const x2 = x1.toString().replace(")]}'", '');
@@ -661,7 +662,7 @@ export const getReviews = async (req, res) => {
   }
 
   try {
-    await scrapInfiniteScrollItems(res, page, totalReviewCount, 250);
+    await scrapInfiniteScrollItems(res, page, totalReviewCount, 500);
   } catch (error) {
     console.log(error);
   }
