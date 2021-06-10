@@ -447,33 +447,33 @@ const iPhone = puppeteer.devices['iPhone 6'];
 //       console.log(error);
 //     }
 
-//     // const start1 = async () => {
-//     //   const reviews = [];
-//     //   await asyncForEach(listEntitiesReviews, async (url) => {
-//     //     // const data = await fetch(url, {
-//     //     //   method: 'get',
-//     //     //   headers: { 'Content-Type': 'application/json' },
-//     //     // });
-//     //     // const x0 = await data;
-//     //     // const x1 = await x0.text();
-//     //     // const x2 = x1.toString().replace(")]}'", '');
-//     //     // const x3 = JSON.parse(x2);
+    // const start1 = async () => {
+    //   const reviews = [];
+    //   await asyncForEach(listEntitiesReviews, async (url) => {
+    //     // const data = await fetch(url, {
+    //     //   method: 'get',
+    //     //   headers: { 'Content-Type': 'application/json' },
+    //     // });
+    //     // const x0 = await data;
+    //     // const x1 = await x0.text();
+    //     // const x2 = x1.toString().replace(")]}'", '');
+    //     // const x3 = JSON.parse(x2);
   
-//     //     // if (x3[2] !== null) {
-//     //     //   if (x3[2].length > 0) {
-//     //     //     await asyncForEach(x3[2], (r, index) => {
-//     //     //       console.log(index);
-//     //     //       const uid = r[6];
-//     //     //       const name = r[60][1];
-//     //     //       const publishDate = r[27];
-//     //     //       const text = r[3];
-//     //     //       const rating = r[4];
-//     //     //       const url = r[18];
-//     //     //       reviews.push({ uid, name, publishDate, text, rating, url });
-//     //     //     });
-//     //     //   }
-//     //     // }
-//     //   });
+    //     // if (x3[2] !== null) {
+    //     //   if (x3[2].length > 0) {
+    //     //     await asyncForEach(x3[2], (r, index) => {
+    //     //       console.log(index);
+    //     //       const uid = r[6];
+    //     //       const name = r[60][1];
+    //     //       const publishDate = r[27];
+    //     //       const text = r[3];
+    //     //       const rating = r[4];
+    //     //       const url = r[18];
+    //     //       reviews.push({ uid, name, publishDate, text, rating, url });
+    //     //     });
+    //     //   }
+    //     // }
+    //   });
       
 //     //   // res.setHeader('Connection', 'keep-alive');
 //     //   // res.setHeader('Cache-Control', 'no-cache');
@@ -575,28 +575,29 @@ export const getReviews = async (req, res) => {
 
   page.on('request', async (request) => {
     if (request.url().includes('listentitiesreviews')) {
-      const data = await fetch(request.url(), {
-        method: 'get',
-        headers: { 'Content-Type': 'application/json' },
-      });
-      await page.waitForTimeout(500);
-      const x0 = await data;
-      const x1 = await x0.text();
-      const x2 = x1.toString().replace(")]}'", '');
-      const x3 = JSON.parse(x2);
-      if (x3[2] !== null) {
-        if (x3[2].length > 0) {
-          await asyncForEach(x3[2], (r, index) => {
-            const uid = r[6];
-            const name = r[60][1];
-            const publishDate = r[27];
-            const text = r[3];
-            const rating = r[4];
-            const url = r[18];
-            reviews.push({ uid, name, publishDate, text, rating, url });
-          });
-        }
-      }
+      listEntitiesReviews.push(request.url());
+      // const data = await fetch(request.url(), {
+      //   method: 'get',
+      //   headers: { 'Content-Type': 'application/json' },
+      // });
+      // await page.waitForTimeout(500);
+      // const x0 = await data;
+      // const x1 = await x0.text();
+      // const x2 = x1.toString().replace(")]}'", '');
+      // const x3 = JSON.parse(x2);
+      // if (x3[2] !== null) {
+      //   if (x3[2].length > 0) {
+      //     await asyncForEach(x3[2], (r, index) => {
+      //       const uid = r[6];
+      //       const name = r[60][1];
+      //       const publishDate = r[27];
+      //       const text = r[3];
+      //       const rating = r[4];
+      //       const url = r[18];
+      //       reviews.push({ uid, name, publishDate, text, rating, url });
+      //     });
+      //   }
+      // }
     }
     request.continue();
   });
@@ -679,12 +680,50 @@ export const getReviews = async (req, res) => {
     console.log(error);
   }
 
-  await browser.close();
-  res.setHeader('Connection', 'keep-alive');
-  res.setHeader('Cache-Control', 'no-cache');
-  res.setHeader('Access-Control-Allow-Origin', '*');
-  res.json(reviews);
-  res.end();
+  const start1 = async () => {
+    const reviews = [];
+    await asyncForEach(listEntitiesReviews, async (url, index) => {
+      console.log(`Fetching URL ${index + 1}/${listEntitiesReviews.length}...`);
+      try {
+        const data = await fetch(url, {
+          method: 'get',
+          headers: { 'Content-Type': 'application/json' },
+        });
+      } catch (error) {
+        console.log(error);
+      }
+      console.log(`Fetching finished.`);
+      console.log(`Parsing fetched data...`);
+      const x0 = await data;
+      const x1 = await x0.text();
+      const x2 = x1.toString().replace(")]}'", '');
+      const x3 = JSON.parse(x2);
+
+      if (x3[2] !== null) {
+        if (x3[2].length > 0) {
+          await asyncForEach(x3[2], (r, index) => {
+            console.log(index);
+            const uid = r[6];
+            const name = r[60][1];
+            const publishDate = r[27];
+            const text = r[3];
+            const rating = r[4];
+            const url = r[18];
+            reviews.push({ uid, name, publishDate, text, rating, url });
+          });
+          console.log(`Parsing finished.`);
+        }
+      }
+    });
+    await browser.close();
+    res.setHeader('Connection', 'keep-alive');
+    res.setHeader('Cache-Control', 'no-cache');
+    res.setHeader('Access-Control-Allow-Origin', '*');
+    res.json(reviews);
+    res.end();
+  };
+
+  start1();
 };
 
 const scrapInfiniteScrollItems = async (res, page, totalReviewCount, delay) => {
@@ -709,9 +748,9 @@ const scrapInfiniteScrollItems = async (res, page, totalReviewCount, delay) => {
       );
       await page.waitForTimeout(delay);
       currentReviewsCount = await page.evaluate(getReviewCount);
-      console.log(reviews.length);
+      // console.log(reviews.length);
       console.log(`currentReviewsCount ${currentReviewsCount} + '/' + totalReviewCount ${totalReviewCount}`);
-      if (reviews.length == totalReviewCount) {
+      if (currentReviewsCount == totalReviewCount) {
         await page.waitForTimeout(2222);
         break;
       }
