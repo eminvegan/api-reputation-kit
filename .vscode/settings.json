@@ -1,0 +1,4 @@
+{
+    "appService.defaultWebAppToDeploy": "/subscriptions/500a6b31-a6e3-4d98-99bf-cd56c8b8f59d/resourceGroups/appsvc_linux_centralus/providers/Microsoft.Web/sites/api-reputation-kit",
+    "appService.deploySubpath": "."
+}

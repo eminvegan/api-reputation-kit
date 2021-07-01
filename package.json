@@ -4,18 +4,17 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "start": "nodemon ./index.js --exec babel-node -e js"
+    "start": "nodemon ./index.js --exec babel-node -e js",
+    "start:2": "functions-framework --target=reviews"
   },
   "author": "eminvegan",
   "license": "ISC",
   "dependencies": {
+    "@google-cloud/functions-framework": "^1.9.0",
     "cors": "^2.8.5",
     "express": "^4.17.1",
     "node-fetch": "^2.6.1",
-    "puppeteer": "^5.5.0",
-    "puppeteer-autoscroll-down": "^0.1.6",
-    "puppeteer-cluster": "^0.22.0",
-    "puppeteer-infinite-scroll": "^1.0.1"
+    "puppeteer": "^5.5.0"
   },
   "devDependencies": {
     "@babel/cli": "^7.12.1",

@@ -7,6 +7,8 @@ const iPhone = puppeteer.devices['iPhone 6'];
 let reviews = [];
 
 export const getReviews = async (req, res) => {
+  req.socket.setTimeout(3600e3);
+
   const PID = req.params.placeID;
 
   reviews = [];
@@ -174,7 +176,7 @@ export const getReviews = async (req, res) => {
   }
 
   try {
-    await scrapInfiniteScrollItems(res, page, totalReviewCount, 500);
+    await scrapInfiniteScrollItems(res, page, totalReviewCount, 750);
   } catch (error) {
     console.log(error);
   }
@@ -226,7 +228,7 @@ export const getReviews = async (req, res) => {
 };
 
 const scrapInfiniteScrollItems = async (res, page, totalReviewCount, delay) => {
-  page.setDefaultTimeout(1339);
+  page.setDefaultTimeout(5000);
   let currentReviewsCount = 0;
   try {
     let previousReviewsCount;
@@ -262,12 +264,6 @@ const scrapInfiniteScrollItems = async (res, page, totalReviewCount, delay) => {
 const getReviewCount = () => {
   return document.querySelectorAll('.mapsLiteJsReviewsReviewspage__ml-reviews-page-user-review-container')
     .length;
-};
-
-const getPreviousHeight = () => {
-  return document.querySelector(
-    '.ml-reviews-page-white-background > div:nth-child(2)'
-  ).scrollHeight;
 };
 
 async function asyncForEach(array, callback) {
