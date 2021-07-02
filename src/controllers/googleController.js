@@ -1,5 +1,4 @@
 const fetch = require('node-fetch');
-const { Cluster } = require('puppeteer-cluster');
 import puppeteer from 'puppeteer';
 
 const iPhone = puppeteer.devices['iPhone 6'];
@@ -176,7 +175,7 @@ export const getReviews = async (req, res) => {
   }
 
   try {
-    await scrapInfiniteScrollItems(res, page, totalReviewCount, 750);
+    await scrapInfiniteScrollItems(res, page, totalReviewCount, 150);
   } catch (error) {
     console.log(error);
   }
@@ -228,7 +227,46 @@ export const getReviews = async (req, res) => {
 };
 
 const scrapInfiniteScrollItems = async (res, page, totalReviewCount, delay) => {
-  page.setDefaultTimeout(5000);
+  let count = 0;
+  let maxTries = 20;
+
+  page.setDefaultTimeout(2000);
+
+  let currentReviewsCount = 0;
+
+  let previousReviewsCount;
+  let previousHeight;
+
+  while (true) {
+    previousReviewsCount = currentReviewsCount;
+
+    try {
+      previousHeight = await page.evaluate(() => document.querySelector('#app > div.ml-pane-container > div.visible > div > div.mapsLiteJsReviewsReviewspage__ml-reviews-page-white-background > div:nth-child(2)').scrollHeight);
+
+      await page.evaluate(`document.querySelector('.mapsLiteJsReviewsReviewspage__ml-reviews-page-user-review-loading').scrollIntoView({ block: 'end', inline: 'end' })`);
+
+      await page.waitForFunction(`document.querySelector('#app > div.ml-pane-container > div.visible > div > div.mapsLiteJsReviewsReviewspage__ml-reviews-page-white-background > div:nth-child(2)').scrollHeight > ${previousHeight}`);
+
+      await page.waitForTimeout(delay);
+
+      currentReviewsCount = await page.evaluate(getReviewCount);
+
+      console.log(`currentReviewsCount ${currentReviewsCount} + '/' + totalReviewCount ${totalReviewCount}`);
+
+      if (currentReviewsCount === totalReviewCount) {
+        await page.waitForTimeout(2222);
+        break;
+      }
+    
+    } catch (e) {
+      if (++count == maxTries) throw e;
+    }   
+  }
+  
+};
+
+/* const scrapInfiniteScrollItems = async (res, page, totalReviewCount, delay) => {
+  page.setDefaultTimeout(1000);
   let currentReviewsCount = 0;
   try {
     let previousReviewsCount;
@@ -259,7 +297,7 @@ const scrapInfiniteScrollItems = async (res, page, totalReviewCount, delay) => {
   } catch (error) {
     console.log(error);
   }
-};
+}; */
 
 const getReviewCount = () => {
   return document.querySelectorAll('.mapsLiteJsReviewsReviewspage__ml-reviews-page-user-review-container')
